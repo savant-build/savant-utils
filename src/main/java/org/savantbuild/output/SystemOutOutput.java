@@ -29,8 +29,8 @@ public class SystemOutOutput implements Output {
 
   private boolean debugEnabled;
 
-  public SystemOutOutput(PrintStream out, boolean colorize) {
-    this.out = out;
+  public SystemOutOutput(boolean colorize) {
+    this.out = System.out;
     this.colorize = colorize;
   }
 
@@ -38,6 +38,16 @@ public class SystemOutOutput implements Output {
     if (debugEnabled) {
       println(message, values);
     }
+  }
+
+  @Override
+  public void disableDebug() {
+    this.debugEnabled = false;
+  }
+
+  @Override
+  public void enableDebug() {
+    this.debugEnabled = true;
   }
 
   public void error(String message, Object... values) {

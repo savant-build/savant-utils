@@ -1,0 +1,115 @@
+/*
+ * Copyright (c) 2013, Inversoft Inc., All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
+ * language governing permissions and limitations under the License.
+ */
+package org.savantbuild.lang;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Models a Classpath.
+ *
+ * @author Brian Pontarelli
+ */
+public class Classpath {
+  private final List<String> paths = new ArrayList<>();
+
+  /**
+   * Constructs a Classpath with the given initial parts.
+   *
+   * @param paths The paths to add to the Classpath on construction.
+   */
+  public Classpath(String... paths) {
+    Collections.addAll(this.paths, paths);
+  }
+
+  /**
+   * Adds the given path to the Classpath.
+   *
+   * @param path The path to add.
+   * @return This Classpath.
+   */
+  public Classpath add(String path) {
+    paths.add(path);
+    return this;
+  }
+
+  /**
+   * Adds the given path to the Classpath.
+   *
+   * @param path The path to add.
+   * @return This Classpath.
+   */
+  public Classpath add(Path path) {
+    paths.add(path.toString());
+    return this;
+  }
+
+  /**
+   * Adds the given path to the Classpath.
+   *
+   * @param file The file to add.
+   * @return This Classpath.
+   */
+  public Classpath add(File file) {
+    paths.add(file.toString());
+    return this;
+  }
+
+  /**
+   * Adds all the given paths to the Classpath.
+   *
+   * @param paths The paths to add to the Classpath.
+   * @return This Classpath.
+   */
+  public Classpath addAll(Path... paths) {
+    for (Path path : paths) {
+      this.paths.add(path.toString());
+    }
+    return this;
+  }
+
+  /**
+   * Converts this Classpath to a String by joining the paths using the File.separator. If the Classpath is empty, this
+   * returns an empty String.
+   *
+   * @return The Classpath as a String or an empty String.
+   */
+  public String toString() {
+    if (paths.isEmpty()) {
+      return "";
+    }
+
+    return String.join(File.separator, paths);
+  }
+
+  /**
+   * Converts this Classpath to a String by joining the paths using the File.separator and adding the prefix to the
+   * start. If the Classpath is empty, this returns an empty String.
+   *
+   * @param prefix The prefix of the String (usually '-classpath ').
+   * @return The Classpath as a String or an empty String.
+   */
+  public String toString(String prefix) {
+    if (paths.isEmpty()) {
+      return "";
+    }
+
+    return prefix + toString();
+  }
+}

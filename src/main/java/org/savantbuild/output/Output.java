@@ -31,6 +31,16 @@ public interface Output {
   void debug(String message, Object... values);
 
   /**
+   * Disables debug messages.
+   */
+  void disableDebug();
+
+  /**
+   * Enables debug messages.
+   */
+  void enableDebug();
+
+  /**
    * Outputs an error message along with the given values. This uses printf if there are values and append a newline
    * character to the end of message. If there are no values, this outputs the message via println.
    *

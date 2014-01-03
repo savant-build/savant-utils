@@ -29,7 +29,7 @@ import static org.testng.Assert.assertEquals;
  */
 public class SystemOutOutputTest {
   public static void main(String[] args) {
-    Output output = new SystemOutOutput(System.out, true);
+    Output output = new SystemOutOutput(true);
     output.error("Error");
     output.warning("Warning");
     output.info("Info");
@@ -39,7 +39,7 @@ public class SystemOutOutputTest {
   public void noColor() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(baos);
-    Output output = new SystemOutOutput(out, false);
+    Output output = new SystemOutOutput(false);
     output.error("Error");
     output.warning("Warning");
     output.info("Info");

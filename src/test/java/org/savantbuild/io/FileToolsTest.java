@@ -15,12 +15,10 @@
  */
 package org.savantbuild.io;
 
-import org.testng.annotations.BeforeSuite;
+import org.savantbuild.BaseTest;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.testng.Assert.assertTrue;
 
@@ -29,17 +27,7 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Brian Pontarelli
  */
-public class FileToolsTest {
-  public static Path projectDir;
-
-  @BeforeSuite
-  public static void beforeSuite() {
-    projectDir = Paths.get("");
-    if (!Files.isRegularFile(projectDir.resolve("LICENSE"))) {
-      projectDir = Paths.get("savant-utils");
-    }
-  }
-
+public class FileToolsTest extends BaseTest {
   @Test
   public void copy() throws Exception {
     FileTools.copyRecursive(Files.list(projectDir.resolve("src/test/java")), projectDir.resolve("build/test"));
