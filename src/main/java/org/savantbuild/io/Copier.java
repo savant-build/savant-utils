@@ -15,8 +15,6 @@
  */
 package org.savantbuild.io;
 
-import org.savantbuild.output.Output;
-
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -37,19 +35,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Copier {
   public final Path baseDirectory;
 
-  public final Output output;
-
   public Path to;
 
   public List<FileSet> fileSets = new ArrayList<>();
 
-  public Copier(Output output) {
-    this.output = output;
+  public Copier() {
     this.baseDirectory = Paths.get("");
   }
 
-  public Copier(Output output, Path baseDirectory) {
-    this.output = output;
+  public Copier(Path baseDirectory) {
     this.baseDirectory = baseDirectory;
   }
 
@@ -58,18 +52,18 @@ public class Copier {
 
     AtomicInteger count = new AtomicInteger(0);
     for (FileSet fileSet : fileSets) {
-      Path absoluteFrom = fileSet.directory.isAbsolute() ? fileSet.directory : baseDirectory.resolve(fileSet.directory);
-      if (!Files.isDirectory(absoluteFrom)) {
+      Path resolvedFrom = fileSet.directory.isAbsolute() ? fileSet.directory : baseDirectory.resolve(fileSet.directory);
+      if (!Files.isDirectory(resolvedFrom)) {
         continue;
       }
 
-      Files.walkFileTree(absoluteFrom, new SimpleFileVisitor<Path>() {
+      Files.walkFileTree(resolvedFrom, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-          Path relativeDestination = file.subpath(absoluteFrom.getNameCount(), file.getNameCount());
-          Path absoluteDestination = absoluteTo.resolve(relativeDestination);
-          Files.createDirectories(absoluteDestination.getParent());
-          Files.copy(file, absoluteDestination);
+          Path relativeDestination = file.subpath(resolvedFrom.getNameCount(), file.getNameCount());
+          Path resolvedDestination = absoluteTo.resolve(relativeDestination);
+          Files.createDirectories(resolvedDestination.getParent());
+          Files.copy(file, resolvedDestination);
           count.incrementAndGet();
           return FileVisitResult.CONTINUE;
         }

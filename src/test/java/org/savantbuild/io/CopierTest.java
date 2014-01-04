@@ -16,7 +16,6 @@
 package org.savantbuild.io;
 
 import org.savantbuild.BaseTest;
-import org.savantbuild.output.SystemOutOutput;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
@@ -37,7 +36,7 @@ public class CopierTest extends BaseTest {
     Path toDir = projectDir.resolve("build/test/copy");
     FileTools.prune(toDir);
 
-    Copier copier = new Copier(new SystemOutOutput(false), projectDir);
+    Copier copier = new Copier(projectDir);
     copier.to(Paths.get("build/test/copy"))
           .fileSet(Paths.get("src/main/java"))
           .copy();

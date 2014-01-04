@@ -20,10 +20,15 @@ import org.savantbuild.io.FileSet;
 import org.savantbuild.io.FileTools;
 import org.testng.annotations.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.jar.JarFile;
 
 import static java.util.Arrays.stream;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests the JarBuilder.
@@ -31,19 +36,22 @@ import static org.testng.Assert.assertNotNull;
  * @author Brian Pontarelli
  */
 public class JarBuilderTest extends BaseTest {
+  private static void assertJarContains(JarFile jarFile, String... entries) {
+    stream(entries).forEach((entry) -> assertNotNull(jarFile.getEntry(entry), "Jar [" + jarFile + "] is missing entry [" + entry + "]"));
+  }
+
   @Test
   public void build() throws Exception {
     FileTools.prune(projectDir.resolve("build/test/jars"));
 
-    JarBuilder builder = new JarBuilder(projectDir.resolve("build/test/jars/test.jar"));
-    JarFile jar = builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
-                         .fileSet(new FileSet(projectDir.resolve("src/test/java")))
-                         .build();
-    assertJarContains(jar, "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
+    Path path = projectDir.resolve("build/test/jars/test.jar");
+    JarBuilder builder = new JarBuilder(path, projectDir);
+    int count = builder.fileSet(new FileSet(Paths.get("src/main/java")))
+                       .fileSet(new FileSet(Paths.get("src/test/java")))
+                       .build();
+    assertEquals(count, 18);
+    assertTrue(Files.isReadable(path));
+    assertJarContains(new JarFile(path.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
-  }
-
-  private static void assertJarContains(JarFile jarFile, String... entries) {
-    stream(entries).forEach((entry) -> assertNotNull(jarFile.getEntry(entry), "Jar [" + jarFile + "] is missing entry [" + entry + "]"));
   }
 }

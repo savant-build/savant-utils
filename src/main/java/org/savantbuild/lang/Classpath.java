@@ -95,7 +95,7 @@ public class Classpath {
       return "";
     }
 
-    return String.join(File.separator, paths);
+    return String.join(File.pathSeparator, paths);
   }
 
   /**

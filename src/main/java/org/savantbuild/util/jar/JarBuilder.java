@@ -26,8 +26,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 /**
@@ -37,10 +37,14 @@ import java.util.jar.JarOutputStream;
  */
 public class JarBuilder {
   public final List<FileSet> fileSets = new ArrayList<>();
+
   public final Path file;
 
-  public JarBuilder(Path file) {
+  public final Path baseDir;
+
+  public JarBuilder(Path file, Path baseDir) {
     this.file = file;
+    this.baseDir = baseDir;
   }
 
   public JarBuilder fileSet(FileSet fileSet) throws IOException {
@@ -56,17 +60,19 @@ public class JarBuilder {
     return fileSet(new FileSet(directory));
   }
 
-  public JarFile build() throws IOException {
+  public int build() throws IOException {
     if (!Files.isDirectory(file.getParent())) {
       Files.createDirectories(file.getParent());
     }
 
+    AtomicInteger count = new AtomicInteger(0);
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
-        Files.walkFileTree(fileSet.directory, new SimpleFileVisitor<Path>() {
+        Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
+        Files.walkFileTree(resolvedDirectory, new SimpleFileVisitor<Path>() {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            Path relativePath = file.subpath(fileSet.directory.getNameCount(), file.getNameCount());
+            Path relativePath = file.subpath(resolvedDirectory.getNameCount(), file.getNameCount());
             JarEntry entry = new JarEntry(relativePath.toString());
             entry.setCreationTime((FileTime) Files.getAttribute(file, "creationTime"));
             entry.setLastAccessTime((FileTime) Files.getAttribute(file, "lastAccessTime"));
@@ -75,12 +81,13 @@ public class JarBuilder {
             entry.setSize((Long) Files.getAttribute(file, "size"));
             jos.putNextEntry(entry);
             Files.copy(file, jos);
+            count.incrementAndGet();
             return FileVisitResult.CONTINUE;
           }
         });
       }
     }
 
-    return new JarFile(file.toFile());
+    return count.get();
   }
 }

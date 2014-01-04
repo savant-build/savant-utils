@@ -15,8 +15,22 @@
  */
 package org.savantbuild.lang;
 
+import org.testng.annotations.Test;
+
+import java.io.File;
+import java.nio.file.Paths;
+
+import static org.testng.Assert.assertEquals;
+
 /**
+ * Tests the Classpath class.
+ *
  * @author Brian Pontarelli
  */
 public class ClasspathTest {
+  @Test
+  public void string() {
+    assertEquals(new Classpath().add("foo").add("bar").add(new File("baz")).add(Paths.get("fred")).toString(), "foo:bar:baz:fred");
+    assertEquals(new Classpath().add("foo").add("bar").add(new File("baz")).add(Paths.get("fred")).toString("-cp "), "-cp foo:bar:baz:fred");
+  }
 }
