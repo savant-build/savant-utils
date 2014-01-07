@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * This interface defines the generic graph data structure.
@@ -66,6 +67,15 @@ public interface Graph<T, U> {
    * @return True if the value is in the graph, false otherwise.
    */
   boolean contains(T value);
+
+  /**
+   * Finds the first node in the graph that satisfies the predicate using a depth first traversal of the graph.
+   *
+   * @param rootValue The value of the node to start the traversal from.
+   * @param predicate The predicate used to find the node.
+   * @throws CyclicException If there is a cycle in the graph.
+   */
+  T find(T rootValue, Predicate<T> predicate) throws CyclicException;
 
   /**
    * Returns a list of all the inbound edges for the node whose value is given. This locates the first node with the
@@ -131,8 +141,9 @@ public interface Graph<T, U> {
    *
    * @param rootValue The value of the node to start the traversal from.
    * @param consumer  The GraphConsumer that is called for each edge.
+   * @throws CyclicException If there is a cycle in the graph.
    */
-  void traverse(T rootValue, GraphConsumer<T, U> consumer);
+  void traverse(T rootValue, GraphConsumer<T, U> consumer) throws CyclicException;
 
   /**
    * Returns a Set that contains all of the unique values contained in the graph.

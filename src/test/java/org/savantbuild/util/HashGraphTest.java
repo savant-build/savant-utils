@@ -29,6 +29,8 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -69,6 +71,22 @@ public class HashGraphTest {
     graph2.addEdge("one", "two", "one-two");
 
     assertEquals(graph, graph2);
+  }
+
+  @Test
+  public void find() {
+    assertEquals(graph.find("one", (node) -> node.equals("one")), "one");
+    assertEquals(graph.find("one", (node) -> node.equals("two")), "two");
+    assertEquals(graph.find("one", (node) -> node.equals("three")), "three");
+    assertEquals(graph.find("one", (node) -> node.equals("four")), "four");
+    assertEquals(graph.find("one", (node) -> node.equals("five")), "five");
+    assertNull(graph.find("one", (node) -> node.equals("six")));
+    assertNull(graph.find("two", (node) -> node.equals("one")));
+    assertEquals(graph.find("two", (node) -> node.equals("two")), "two");
+    assertEquals(graph.find("two", (node) -> node.equals("three")), "three");
+    assertEquals(graph.find("two", (node) -> node.equals("four")), "four");
+    assertEquals(graph.find("two", (node) -> node.equals("five")), "five");
+    assertNull(graph.find("two", (node) -> node.equals("six")));
   }
 
   @Test

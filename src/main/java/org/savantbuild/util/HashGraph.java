@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -32,42 +33,42 @@ import static java.util.Arrays.asList;
 /**
  * This class is used to construct and manage graph structures. This is a simple class that makes the navigation and
  * usage of Graphs simple and accessible.
- * <p/>
+ * <p>
  * <h3>Graphs</h3>
- * <p/>
+ * <p>
  * Graphs are simple structures that model nodes with any number of connections between nodes. The connections are
  * bi-directional and are called Edges. A two node graph with an edge between the nodes looks like this:
- * <p/>
+ * <p>
  * <pre>
  * node1 <---> node2
  * </pre>
- * <p/>
+ * <p>
  * The important point about Graphs is that they don't enforce a top level node that controls the entire structure like
  * trees do. Instead, the graph has access to all nodes and the connections between them. This makes finding a Node easy
  * and then traversing the graph also easy.
- * <p/>
+ * <p>
  * <h3>Generics</h3>
- * <p/>
+ * <p>
  * There are two generics for a Graph. The first variable T is the content of the nodes themselves. Each node can stored
  * a single value. The second generic is the value that can be associated with the Edge between nodes. This is carried
  * throughout the entire graph structure making it very strongly typed.
- * <p/>
+ * <p>
  * <h3>Internals</h3>
- * <p/>
+ * <p>
  * It is important to understand how the Graph works internally. Nodes are stored in a Map whose key is the value for
  * the node. If the graph is storing Strings then only a single node can exist with the value <em>foo</em>. This means
  * that the graph does not allow duplicates. Therefore it would be impossible to have two nodes whose values are
- * <em>foo</em> with different edges. The key of the Map is a {@link HashNode} object. The
- * node stores the value as well as all the edges.
- * <p/>
+ * <em>foo</em> with different edges. The key of the Map is a {@link HashNode} object. The node stores the value as well
+ * as all the edges.
+ * <p>
  * <h3>Node values</h3>
- * <p/>
+ * <p>
  * Due to the implementation of the graph, all values must have a good equal and hashcode implementation. Using the
  * object identity is allowed and will then manage the graph based on the heap location of the value objects (pointers
  * are used for the java.lang.Object version of equals and hashcode).
- * <p/>
+ * <p>
  * <h3>Thread safety</h3>
- * <p/>
+ * <p>
  * The Graph is not thread safe. Classes must synchronize on the graph instance in order to protect multi-threaded use.
  *
  * @author Brian Pontarelli
@@ -100,6 +101,20 @@ public class HashGraph<T, U> implements Graph<T, U> {
 
     final HashGraph hashGraph = (HashGraph) o;
     return nodes.equals(hashGraph.nodes);
+  }
+
+  /**
+   * Finds the first node in the graph that satisfies the predicate using a depth first traversal of the graph.
+   *
+   * @param rootValue The value of the node to start the traversal from.
+   * @param predicate The predicate used to find the node.
+   * @throws CyclicException If there is a cycle in the graph.
+   */
+  @Override
+  public T find(T rootValue, Predicate<T> predicate) throws CyclicException {
+    HashNode<T, U> rootNode = nodes.get(rootValue);
+    Set<T> visited = new HashSet<>();
+    return find(rootNode, visited, predicate);
   }
 
   @Override
@@ -200,8 +215,16 @@ public class HashGraph<T, U> implements Graph<T, U> {
     return nodes.size();
   }
 
+  /**
+   * Performs a depth first traversal of the graph. For each node, the GraphConsumer is called. The traversal WILL
+   * traverse the same node twice if it has multiple connections.
+   *
+   * @param rootValue The value of the node to start the traversal from.
+   * @param consumer  The GraphConsumer that is called for each edge.
+   * @throws CyclicException If there is a cycle in the graph.
+   */
   @Override
-  public void traverse(T rootValue, GraphConsumer<T, U> consumer) {
+  public void traverse(T rootValue, GraphConsumer<T, U> consumer) throws CyclicException {
     HashNode<T, U> rootNode = nodes.get(rootValue);
     Set<T> visited = new HashSet<>();
     traverse(rootNode, visited, consumer, 1);
@@ -239,6 +262,27 @@ public class HashGraph<T, U> implements Graph<T, U> {
     node.inbound.clear();
   }
 
+  private T find(HashNode<T, U> root, Set<T> visited, Predicate<T> predicate) {
+    if (predicate.test(root.value)) {
+      return root.value;
+    }
+
+    for (HashEdge<T, U> edge : root.outbound) {
+      if (visited.contains(edge.destination.value)) {
+        throw new CyclicException("Encountered the graph node [" + edge.destination.value + "] twice. Your graph has a cycle");
+      }
+
+      visited.add(root.value);
+      T result = find(edge.destination, visited, predicate);
+      if (result != null) {
+        return result;
+      }
+      visited.remove(root.value);
+    }
+
+    return null;
+  }
+
   private void traverse(HashNode<T, U> root, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
     root.outbound.forEach((edge) -> {
       if (visited.contains(edge.destination.value)) {
@@ -253,6 +297,50 @@ public class HashGraph<T, U> implements Graph<T, U> {
         traverse(edge.destination, visited, consumer, depth + 1);
       }
     });
+  }
+
+  /**
+   * This class is the edge between nodes in the graph.
+   *
+   * @author Brian Pontarelli
+   */
+  private static class HashEdge<T, U> {
+    public final HashNode<T, U> destination;
+
+    public final HashNode<T, U> origin;
+
+    public final U value;
+
+    public HashEdge(HashNode<T, U> origin, HashNode<T, U> destination, U value) {
+      this.origin = origin;
+      this.destination = destination;
+      this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      final HashEdge hashEdge = (HashEdge) o;
+      return destination.value.equals(hashEdge.destination.value) && origin.value.equals(hashEdge.origin.value) && value.equals(hashEdge.value);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = destination.value.hashCode();
+      result = 31 * result + origin.value.hashCode();
+      result = 31 * result + value.hashCode();
+      return result;
+    }
+
+    public Edge<T, U> toEdge() {
+      return new BaseEdge<>(origin.value, destination.value, value);
+    }
   }
 
   /**
@@ -313,6 +401,11 @@ public class HashGraph<T, U> implements Graph<T, U> {
       return result;
     }
 
+    public void removeEdge(HashEdge<T, U> edge) {
+      outbound.remove(edge);
+      inbound.remove(edge);
+    }
+
     /**
      * @return The toString of the node's value.
      */
@@ -332,55 +425,6 @@ public class HashGraph<T, U> implements Graph<T, U> {
       if (!outbound.contains(edge)) {
         outbound.add(edge);
       }
-    }
-
-    public void removeEdge(HashEdge<T, U> edge) {
-      outbound.remove(edge);
-      inbound.remove(edge);
-    }
-  }
-
-  /**
-   * This class is the edge between nodes in the graph.
-   *
-   * @author Brian Pontarelli
-   */
-  private static class HashEdge<T, U> {
-    public final HashNode<T, U> destination;
-
-    public final HashNode<T, U> origin;
-
-    public final U value;
-
-    public HashEdge(HashNode<T, U> origin, HashNode<T, U> destination, U value) {
-      this.origin = origin;
-      this.destination = destination;
-      this.value = value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-
-      final HashEdge hashEdge = (HashEdge) o;
-      return destination.value.equals(hashEdge.destination.value) && origin.value.equals(hashEdge.origin.value) && value.equals(hashEdge.value);
-    }
-
-    @Override
-    public int hashCode() {
-      int result = destination.value.hashCode();
-      result = 31 * result + origin.value.hashCode();
-      result = 31 * result + value.hashCode();
-      return result;
-    }
-
-    public Edge<T, U> toEdge() {
-      return new BaseEdge<>(origin.value, destination.value, value);
     }
   }
 }

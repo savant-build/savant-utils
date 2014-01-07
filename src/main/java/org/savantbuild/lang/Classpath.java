@@ -16,6 +16,9 @@
 package org.savantbuild.lang;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,5 +114,19 @@ public class Classpath {
     }
 
     return prefix + toString();
+  }
+
+  public URLClassLoader toURLClassLoader() throws IllegalStateException {
+    List<URL> urls = new ArrayList<>();
+    for (String path : paths) {
+      try {
+        urls.add(new File(path).toURI().toURL());
+      } catch (MalformedURLException e) {
+        // Very unexpected, rethrow as a plain IllegalStateException
+        throw new IllegalStateException(e);
+      }
+    }
+
+    return new URLClassLoader(urls.toArray(new URL[urls.size()]));
   }
 }
