@@ -86,6 +86,10 @@ public class Copier {
     return fileSet(new FileSet(directory));
   }
 
+  public Copier fileSet(String directory) throws IOException {
+    return fileSet(Paths.get(directory));
+  }
+
   public Copier to(Path to) throws IOException {
     if (Files.isRegularFile(to)) {
       throw new IOException("The [to] path passed to the Copier cannot be a file");
@@ -93,5 +97,9 @@ public class Copier {
 
     this.to = to;
     return this;
+  }
+
+  public Copier to(String to) throws IOException {
+    return to(Paths.get(to));
   }
 }

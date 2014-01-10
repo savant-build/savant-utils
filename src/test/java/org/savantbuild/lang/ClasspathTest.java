@@ -30,7 +30,7 @@ import static org.testng.Assert.assertEquals;
 public class ClasspathTest {
   @Test
   public void string() {
-    assertEquals(new Classpath().add("foo").add("bar").add(new File("baz")).add(Paths.get("fred")).toString(), "foo:bar:baz:fred");
-    assertEquals(new Classpath().add("foo").add("bar").add(new File("baz")).add(Paths.get("fred")).toString("-cp "), "-cp foo:bar:baz:fred");
+    assertEquals(new Classpath().path("foo").path("bar").path(new File("baz")).path(Paths.get("fred")).toString(), "foo:bar:baz:fred");
+    assertEquals(new Classpath().path("foo").path("bar").path(new File("baz")).path(Paths.get("fred")).toString("-cp "), "-cp foo:bar:baz:fred");
   }
 }

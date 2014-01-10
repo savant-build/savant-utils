@@ -47,7 +47,7 @@ public class Classpath {
    * @param path The path to add.
    * @return This Classpath.
    */
-  public Classpath add(String path) {
+  public Classpath path(String path) {
     paths.add(path);
     return this;
   }
@@ -58,7 +58,7 @@ public class Classpath {
    * @param path The path to add.
    * @return This Classpath.
    */
-  public Classpath add(Path path) {
+  public Classpath path(Path path) {
     paths.add(path.toString());
     return this;
   }
@@ -69,7 +69,7 @@ public class Classpath {
    * @param file The file to add.
    * @return This Classpath.
    */
-  public Classpath add(File file) {
+  public Classpath path(File file) {
     paths.add(file.toString());
     return this;
   }
@@ -80,7 +80,7 @@ public class Classpath {
    * @param paths The paths to add to the Classpath.
    * @return This Classpath.
    */
-  public Classpath addAll(Path... paths) {
+  public Classpath paths(Path... paths) {
     for (Path path : paths) {
       this.paths.add(path.toString());
     }
