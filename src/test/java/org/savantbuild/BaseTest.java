@@ -33,7 +33,7 @@ public abstract class BaseTest {
   public static void beforeSuite() {
     projectDir = Paths.get("");
     if (!Files.isRegularFile(projectDir.resolve("LICENSE"))) {
-      projectDir = Paths.get("savant-utils");
+      projectDir = Paths.get("../savant-utils");
     }
   }
 }
