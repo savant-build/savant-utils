@@ -18,7 +18,7 @@ package org.savantbuild.security;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.savantbuild.BaseTest;
+import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
@@ -30,7 +30,7 @@ import static org.testng.Assert.assertNotNull;
  * @author Brian Pontarelli
  */
 @Test(groups = "unit")
-public class MD5Test extends BaseTest {
+public class MD5Test extends BaseUnitTest {
   @Test
   public void md5() throws IOException {
     Path f = projectDir.resolve("src/test/java/org/savantbuild/security/MD5Test.txt");

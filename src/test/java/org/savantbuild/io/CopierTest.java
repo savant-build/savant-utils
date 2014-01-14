@@ -15,7 +15,7 @@
  */
 package org.savantbuild.io;
 
-import org.savantbuild.BaseTest;
+import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
@@ -30,7 +30,7 @@ import static org.testng.Assert.assertTrue;
  * @author Brian Pontarelli
  */
 @Test(groups = "unit")
-public class CopierTest extends BaseTest {
+public class CopierTest extends BaseUnitTest {
   @Test
   public void copyEverything() throws Exception {
     Path toDir = projectDir.resolve("build/test/copy");

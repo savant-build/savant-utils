@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.jar.JarFile;
 
-import org.savantbuild.BaseTest;
+import org.savantbuild.BaseUnitTest;
 import org.savantbuild.io.FileSet;
 import org.savantbuild.io.FileTools;
 import org.testng.annotations.Test;
@@ -35,7 +35,7 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Brian Pontarelli
  */
-public class JarBuilderTest extends BaseTest {
+public class JarBuilderTest extends BaseUnitTest {
   private static void assertJarContains(JarFile jarFile, String... entries) {
     stream(entries).forEach((entry) -> assertNotNull(jarFile.getEntry(entry), "Jar [" + jarFile + "] is missing entry [" + entry + "]"));
   }

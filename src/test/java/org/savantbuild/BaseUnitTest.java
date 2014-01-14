@@ -15,18 +15,20 @@
  */
 package org.savantbuild;
 
-import org.testng.annotations.BeforeSuite;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
 
 /**
  * Base class for tests.
  *
  * @author Brian Pontarelli
  */
-public abstract class BaseTest {
+@Test(groups = "unit")
+public abstract class BaseUnitTest {
   public static Path projectDir;
 
   @BeforeSuite(groups = "unit")

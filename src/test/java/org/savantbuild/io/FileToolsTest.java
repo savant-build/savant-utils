@@ -15,7 +15,7 @@
  */
 package org.savantbuild.io;
 
-import org.savantbuild.BaseTest;
+import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
 import java.nio.file.Files;
@@ -27,7 +27,7 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Brian Pontarelli
  */
-public class FileToolsTest extends BaseTest {
+public class FileToolsTest extends BaseUnitTest {
   @Test
   public void copy() throws Exception {
     FileTools.copyRecursive(Files.list(projectDir.resolve("src/test/java")), projectDir.resolve("build/test"));
