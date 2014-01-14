@@ -15,8 +15,6 @@
  */
 package org.savantbuild.util.jar;
 
-import org.savantbuild.io.FileSet;
-
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -30,6 +28,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+
+import org.savantbuild.io.FileSet;
 
 /**
  * Helps build Jar files.
@@ -74,6 +74,7 @@ public class JarBuilder {
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
         Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
+        System.out.println("Resolved dir is " + resolvedDirectory);
         Files.walkFileTree(resolvedDirectory, new SimpleFileVisitor<Path>() {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

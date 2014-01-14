@@ -34,6 +34,11 @@ public class SystemOutOutput implements Output {
     this.colorize = colorize;
   }
 
+  SystemOutOutput(PrintStream out, boolean colorize) {
+    this.out = out;
+    this.colorize = colorize;
+  }
+
   public void debug(String message, Object... values) {
     if (debugEnabled) {
       println(message, values);

@@ -15,15 +15,15 @@
  */
 package org.savantbuild.util.jar;
 
-import org.savantbuild.BaseTest;
-import org.savantbuild.io.FileSet;
-import org.savantbuild.io.FileTools;
-import org.testng.annotations.Test;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.jar.JarFile;
+
+import org.savantbuild.BaseTest;
+import org.savantbuild.io.FileSet;
+import org.savantbuild.io.FileTools;
+import org.testng.annotations.Test;
 
 import static java.util.Arrays.stream;
 import static org.testng.Assert.assertEquals;
@@ -42,6 +42,7 @@ public class JarBuilderTest extends BaseTest {
 
   @Test
   public void build() throws Exception {
+    System.out.println(projectDir.toAbsolutePath());
     FileTools.prune(projectDir.resolve("build/test/jars"));
 
     Path path = projectDir.resolve("build/test/jars/test.jar");
@@ -49,9 +50,9 @@ public class JarBuilderTest extends BaseTest {
     int count = builder.fileSet(new FileSet(Paths.get("src/main/java")))
                        .fileSet(new FileSet(Paths.get("src/test/java")))
                        .build();
-    assertEquals(count, 18);
     assertTrue(Files.isReadable(path));
     assertJarContains(new JarFile(path.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
+    assertEquals(count, 24);
   }
 }

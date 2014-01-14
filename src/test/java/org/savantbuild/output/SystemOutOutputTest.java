@@ -15,10 +15,10 @@
  */
 package org.savantbuild.output;
 
-import org.testng.annotations.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+
+import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
 
@@ -39,7 +39,7 @@ public class SystemOutOutputTest {
   public void noColor() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(baos);
-    Output output = new SystemOutOutput(false);
+    Output output = new SystemOutOutput(out, false);
     output.error("Error");
     output.warning("Warning");
     output.info("Info");
