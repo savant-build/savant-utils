@@ -21,7 +21,6 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.List;
@@ -34,46 +33,6 @@ import java.util.stream.Stream;
  * @author Brian Pontarelli
  */
 public class FileTools {
-  /**
-   * Copies the given Stream of paths to the target directory. For example:
-   * <p>
-   * <pre>
-   *   copyRecursive(Files.list(Paths.get("foo")), Paths.get("bar"))
-   * </pre>
-   * <p>
-   * This copies everything from the foo directory into the bar directory. This is the same as the command:
-   * <p>
-   * <pre>
-   *   cp -r foo/* bar
-   * </pre>
-   *
-   * @param stream The stream to copy the files from.
-   * @param to     The location to copy the files to.
-   * @throws IOException If the copy fails or the to directory cannot be create.
-   */
-  public static void copyRecursive(Stream<Path> stream, Path to) throws IOException {
-    if (!Files.isDirectory(to)) {
-      Files.createDirectories(to);
-    }
-
-    try (Stream<Path> tryStream = stream) {
-      tryStream.forEach((path) -> {
-        try {
-          if (Files.isRegularFile(path)) {
-            Files.copy(path, to.resolve(path.getFileName()), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-          } else if (Files.isDirectory(path)) {
-            copyRecursive(Files.list(path), to.resolve(path.getFileName()));
-          }
-        } catch (IOException e) {
-          // Wrap in a RuntimeException
-          throw new IllegalStateException(e);
-        }
-      });
-    } catch (IllegalStateException e) {
-      throw (IOException) e.getCause();
-    }
-  }
-
   /**
    * Creates a temporary file.
    *
@@ -163,7 +122,6 @@ public class FileTools {
    */
   private static boolean isModified(Path file, Path outputDir) {
     try {
-      System.out.println("Comparing " + file + " to " + outputDir);
       Path outputFile = outputDir.resolve(file);
       return !Files.isRegularFile(outputFile) || Files.getLastModifiedTime(outputFile).toMillis() < Files.getLastModifiedTime(file).toMillis();
     } catch (IOException e) {

@@ -18,9 +18,7 @@ package org.savantbuild.io;
 import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
-import java.nio.file.Files;
-
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * Tests the FileTools.
@@ -29,10 +27,12 @@ import static org.testng.Assert.assertTrue;
  */
 public class FileToolsTest extends BaseUnitTest {
   @Test
-  public void copy() throws Exception {
-    FileTools.copyRecursive(Files.list(projectDir.resolve("src/test/java")), projectDir.resolve("build/test"));
-    assertTrue(Files.isDirectory(projectDir.resolve("build/test/org")));
-    assertTrue(Files.isRegularFile(projectDir.resolve("build/test/org/savantbuild/io/FileToolsTest.java")));
-    assertTrue(Files.isRegularFile(projectDir.resolve("build/test/org/savantbuild/output/SystemOutOutputTest.java")));
+  public void modifiedFiles() throws Exception {
+    fail("Implement test");
+  }
+
+  @Test
+  public void prune() throws Exception {
+    fail("Implement test");
   }
 }
