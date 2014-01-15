@@ -226,6 +226,10 @@ public class HashGraph<T, U> implements Graph<T, U> {
   @Override
   public void traverse(T rootValue, GraphConsumer<T, U> consumer) throws CyclicException {
     HashNode<T, U> rootNode = nodes.get(rootValue);
+    if (rootNode == null) {
+      throw new IllegalArgumentException("Invalid rootValue [" + rootValue + "] to start the traversal from.");
+    }
+
     Set<T> visited = new HashSet<>();
     traverse(rootNode, visited, consumer, 1);
   }

@@ -42,7 +42,6 @@ public class JarBuilderTest extends BaseUnitTest {
 
   @Test
   public void build() throws Exception {
-    System.out.println(projectDir.toAbsolutePath());
     FileTools.prune(projectDir.resolve("build/test/jars"));
 
     Path path = projectDir.resolve("build/test/jars/test.jar");

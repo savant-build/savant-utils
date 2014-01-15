@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class Copier {
           Path relativeDestination = file.subpath(resolvedFrom.getNameCount(), file.getNameCount());
           Path resolvedDestination = absoluteTo.resolve(relativeDestination);
           Files.createDirectories(resolvedDestination.getParent());
-          Files.copy(file, resolvedDestination);
+          Files.copy(file, resolvedDestination, StandardCopyOption.REPLACE_EXISTING);
           count.incrementAndGet();
           return FileVisitResult.CONTINUE;
         }

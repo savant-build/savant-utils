@@ -109,10 +109,12 @@ public class FileTools {
       return Collections.emptyList();
     }
 
+    Path projectOutputDir = rootDir.resolve(outputDir);
     try (Stream<Path> stream = Files.walk(projectSourceDir)) {
-      return stream.filter((file) -> file.toString().endsWith(extension))
-                   .filter((file) -> isModified(file, outputDir))
-                   .map((file) -> file.subpath(rootDir.getNameCount(), file.getNameCount()).toString())
+      return stream.filter((path) -> path.toString().endsWith(extension))
+                   .map((path) -> path.subpath(rootDir.getNameCount(), path.getNameCount()))
+                   .filter((path) -> isModified(path, projectOutputDir))
+                   .map(Path::toString)
                    .collect(Collectors.toList());
     } catch (IOException e) {
       throw new IllegalStateException("Unable to determine which source files where changed", e);
@@ -161,6 +163,7 @@ public class FileTools {
    */
   private static boolean isModified(Path file, Path outputDir) {
     try {
+      System.out.println("Comparing " + file + " to " + outputDir);
       Path outputFile = outputDir.resolve(file);
       return !Files.isRegularFile(outputFile) || Files.getLastModifiedTime(outputFile).toMillis() < Files.getLastModifiedTime(file).toMillis();
     } catch (IOException e) {

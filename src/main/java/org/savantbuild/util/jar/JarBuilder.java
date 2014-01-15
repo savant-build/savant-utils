@@ -74,7 +74,6 @@ public class JarBuilder {
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
         Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
-        System.out.println("Resolved dir is " + resolvedDirectory);
         Files.walkFileTree(resolvedDirectory, new SimpleFileVisitor<Path>() {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
