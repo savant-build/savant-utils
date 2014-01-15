@@ -20,10 +20,14 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,28 +56,49 @@ public class FileTools {
   }
 
   /**
+   * Returns a Function that maps a source path to a target path by changing the extension of the Path.
+   *
+   * @param original The original extension.
+   * @param target The target extension.
+   * @return The Function.
+   */
+  public static Function<Path, Path> extensionMapper(String original, String target) {
+    return (path) -> Paths.get(path.toString().replace(original, target));
+  }
+
+  /**
+   * Returns a Predicate that returns true if the Path has the given extension.
+   *
+   * @param extension The extension.
+   * @return The Predicate.
+   */
+  public static Predicate<Path> extensionFilter(String extension) {
+    return (path) -> path.toString().endsWith(extension);
+  }
+
+  /**
    * Determines the files that have been modified with respect to the given output directory.
    *
-   * @param rootDir   The root directory (used to calculate the full path to the files relative to this directory).
    * @param sourceDir The source directory to walk.
    * @param outputDir The output directory to compare against.
-   * @param extension The extension required (i.e. .java)
    * @return The list of modified files.
    * @throws IllegalStateException If the code throws an IOException it is wrapped into an IllegalStateException.
    */
-  public static List<String> modifiedFiles(Path rootDir, Path sourceDir, Path outputDir, String extension)
+  public static List<Path> modifiedFiles(Path sourceDir, Path outputDir, Predicate<Path> filter, Function<Path, Path> mapper)
       throws IllegalStateException {
-    Path projectSourceDir = rootDir.resolve(sourceDir);
-    if (!Files.isDirectory(projectSourceDir)) {
+    if (!Files.isDirectory(sourceDir)) {
       return Collections.emptyList();
     }
 
-    Path projectOutputDir = rootDir.resolve(outputDir);
-    try (Stream<Path> stream = Files.walk(projectSourceDir)) {
-      return stream.filter((path) -> path.toString().endsWith(extension))
-                   .map((path) -> path.subpath(rootDir.getNameCount(), path.getNameCount()))
-                   .filter((path) -> isModified(path, projectOutputDir))
-                   .map(Path::toString)
+    try (Stream<Path> stream = Files.walk(sourceDir)) {
+      return stream.filter(filter)
+                   .filter((path) -> {
+                     Path subPath = path.subpath(sourceDir.getNameCount(), path.getNameCount());
+                     Path mappedPath = mapper.apply(subPath);
+                     Path outputPath = outputDir.resolve(mappedPath);
+                     return isModified(path, outputPath);
+                   })
+                   .map((path) -> path.subpath(sourceDir.getNameCount(), path.getNameCount()))
                    .collect(Collectors.toList());
     } catch (IOException e) {
       throw new IllegalStateException("Unable to determine which source files where changed", e);
@@ -113,17 +138,28 @@ public class FileTools {
   }
 
   /**
+   * Updates the last modified timestamp of each of the given Paths. This effectively "touches" each Path.
+   *
+   * @param paths The Paths to touch.
+   * @throws IOException If the update fails.
+   */
+  public static void touch(Path... paths) throws IOException {
+    for (Path path : paths) {
+      Files.setLastModifiedTime(path, FileTime.fromMillis(System.currentTimeMillis()));
+    }
+  }
+
+  /**
    * Determines if the given path is modified when compared to the same path in the given outputDir.
    *
-   * @param file      The file to check.
-   * @param outputDir The output directory (used to build the output file).
-   * @return True if the file is modified, false it if isn't.
+   * @param sourcePath The source path.
+   * @param outputPath The output path.
+   * @return True if the sourcePath is modified when compared to the outputPath, false it if isn't.
    * @throws IllegalStateException If the check throws an IOException it is wrapped into an IllegalStateException.
    */
-  private static boolean isModified(Path file, Path outputDir) {
+  private static boolean isModified(Path sourcePath, Path outputPath) {
     try {
-      Path outputFile = outputDir.resolve(file);
-      return !Files.isRegularFile(outputFile) || Files.getLastModifiedTime(outputFile).toMillis() < Files.getLastModifiedTime(file).toMillis();
+      return !Files.isRegularFile(outputPath) || Files.getLastModifiedTime(outputPath).toMillis() < Files.getLastModifiedTime(sourcePath).toMillis();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

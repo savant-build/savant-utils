@@ -23,23 +23,23 @@ import java.util.function.Predicate;
 
 /**
  * This interface defines the generic graph data structure.
- * <p/>
+ * <p>
  * <h3>Graphs</h3>
- * <p/>
+ * <p>
  * Graphs are simple structures that model nodes with any number of connections between nodes. The connections are
  * bi-directional and are called Edges. A two node graph with an edge between the nodes looks like this:
- * <p/>
+ * <p>
  * <pre>
  * node1 <---> node2
  * </pre>
- * <p/>
+ * <p>
  * The important point about Graphs is that implementations don't need to enforce a top level node that controls the
  * entire structure like trees do. Instead, implementations can choose to have the graph store all of the nodes and the
  * connections between them allowing for direct access to any node. These implementations should define how the direct
  * access is managed and whether or not duplicate nodes can be stored.
- * <p/>
+ * <p>
  * <h3>Generics</h3>
- * <p/>
+ * <p>
  * There are two generics for a Graph. The first variable T is the content of the nodes themselves. Each node can stored
  * a single value. The second generic is the value that can be associated with the Edge between nodes. This is carried
  * throughout the entire graph structure making it very strongly typed.
@@ -50,7 +50,7 @@ public interface Graph<T, U> {
   /**
    * Adds an edge between the node whose value is the origin value given and the node whose value is the destination
    * value given. This method works well for implementations that only allow values to exist once.
-   * <p/>
+   * <p>
    * If there are no nodes for the given value, this method should create nodes for each value and then create an edge
    * between them. This reduces the work required to edge values.
    *
@@ -101,7 +101,7 @@ public interface Graph<T, U> {
    * @param origin      The origin value.
    * @param destination The destination value.
    * @return A list of all the paths between the two nodes or an empty list if there are none or null if either of the
-   *         nodes don't exist.
+   * nodes don't exist.
    */
   List<Path<T>> getPaths(T origin, T destination);
 
@@ -144,6 +144,16 @@ public interface Graph<T, U> {
    * @throws CyclicException If there is a cycle in the graph.
    */
   void traverse(T rootValue, GraphConsumer<T, U> consumer) throws CyclicException;
+
+  /**
+   * Traverses the graph in a depth-first manner ending at the node whose value is given. This traverses down the Graph
+   * until a leaf is reached and then it begins calling the GraphConsumer on the way back up.
+   *
+   * @param rootValue The value of the node to start the traversal from.
+   * @param visitor   The GraphVisitor that is called for each edge.
+   * @throws CyclicException If there is a cycle in the graph.
+   */
+  void traverseUp(T rootValue, GraphVisitor<T, U> visitor) throws CyclicException;
 
   /**
    * Returns a Set that contains all of the unique values contained in the graph.
@@ -261,9 +271,28 @@ public interface Graph<T, U> {
      * @param edgeValue   The edge value.
      * @param depth       The current depth in the graph.
      * @return True if the traversal should continue down from the destination node. False if the traversal should exit
-     *         and resume from the origin node.
+     * and resume from the origin node.
      */
     public boolean consume(T origin, T destination, U edgeValue, int depth);
+  }
+
+  /**
+   * Visitor interface for graph traversal.
+   *
+   * @param <T> The node value type.
+   * @param <U> The edge value type
+   */
+  public static interface GraphVisitor<T, U> {
+    /**
+     * Called by the graph during traversal to handle each node in the graph. The parameters passed in constitute an
+     * edge between two nodes. This method will not visit detached clusters of nodes.
+     *
+     * @param origin      The origin node value.
+     * @param destination The destination node value.
+     * @param edgeValue   The edge value.
+     * @param depth       The current depth in the graph.
+     */
+    public void visit(T origin, T destination, U edgeValue, int depth);
   }
 
   /**

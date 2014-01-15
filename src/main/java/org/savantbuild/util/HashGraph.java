@@ -15,9 +15,6 @@
  */
 package org.savantbuild.util;
 
-import org.savantbuild.util.Graph.Edge.BaseEdge;
-import org.savantbuild.util.Graph.Path.BasePath;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.savantbuild.util.Graph.Edge.BaseEdge;
+import org.savantbuild.util.Graph.Path.BasePath;
 
 import static java.util.Arrays.asList;
 
@@ -235,6 +235,25 @@ public class HashGraph<T, U> implements Graph<T, U> {
   }
 
   /**
+   * Performs a depth first traversal of the graph. For each node, the GraphConsumer is called. The traversal WILL
+   * traverse the same node twice if it has multiple connections.
+   *
+   * @param rootValue The value of the node to start the traversal from.
+   * @param visitor   The GraphVisitor that is called for each edge.
+   * @throws CyclicException If there is a cycle in the graph.
+   */
+  @Override
+  public void traverseUp(T rootValue, GraphVisitor<T, U> visitor) throws CyclicException {
+    HashNode<T, U> rootNode = nodes.get(rootValue);
+    if (rootNode == null) {
+      throw new IllegalArgumentException("Invalid rootValue [" + rootValue + "] to start the traversal from.");
+    }
+
+    Set<T> visited = new HashSet<>();
+    traverseUp(rootNode, visited, visitor, 1);
+  }
+
+  /**
    * Returns a Set that contains all of the unique artifacts contained in the graph.
    *
    * @return All the artifacts.
@@ -294,12 +313,26 @@ public class HashGraph<T, U> implements Graph<T, U> {
       }
 
       visited.add(root.value);
-      boolean cont = consumer.consume(root.value, edge.destination.value, edge.value, depth);
-      visited.remove(root.value);
 
+      boolean cont = consumer.consume(root.value, edge.destination.value, edge.value, depth);
       if (cont) {
         traverse(edge.destination, visited, consumer, depth + 1);
       }
+
+      visited.remove(root.value);
+    });
+  }
+
+  private void traverseUp(HashNode<T, U> root, Set<T> visited, GraphVisitor<T, U> consumer, int depth) {
+    root.outbound.forEach((edge) -> {
+      if (visited.contains(edge.destination.value)) {
+        throw new CyclicException("Encountered the graph node [" + edge.destination.value + "] twice. Your graph has a cycle");
+      }
+
+      visited.add(root.value);
+      traverseUp(edge.destination, visited, consumer, depth + 1);
+      consumer.visit(root.value, edge.destination.value, edge.value, depth);
+      visited.remove(root.value);
     });
   }
 

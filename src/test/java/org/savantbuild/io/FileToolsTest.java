@@ -15,10 +15,18 @@
  */
 package org.savantbuild.io;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
 import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.fail;
+import static java.util.Arrays.asList;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests the FileTools.
@@ -28,11 +36,29 @@ import static org.testng.Assert.fail;
 public class FileToolsTest extends BaseUnitTest {
   @Test
   public void modifiedFiles() throws Exception {
-    fail("Implement test");
+    List<Path> modifiedFiles = FileTools.modifiedFiles(projectDir.resolve("src/main/java"), projectDir.resolve("build/classes/main"),
+        FileTools.extensionFilter(".java"),
+        FileTools.extensionMapper(".java", ".class"));
+    assertEquals(modifiedFiles.size(), 0);
+
+    FileTools.touch(projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/lang/Classpath.java"));
+    modifiedFiles = FileTools.modifiedFiles(projectDir.resolve("src/main/java"), projectDir.resolve("build/classes/main"),
+        FileTools.extensionFilter(".java"),
+        FileTools.extensionMapper(".java", ".class"));
+    assertEquals(modifiedFiles, asList(Paths.get("org/savantbuild/io/FileTools.java"), Paths.get("org/savantbuild/lang/Classpath.java")));
   }
 
   @Test
   public void prune() throws Exception {
-    fail("Implement test");
+    Path path = projectDir.resolve("build/test-prune/sub-dir");
+    Files.createDirectories(path);
+
+    Path file = path.resolve("test.txt");
+    Files.write(file, "Testing 123".getBytes());
+    assertTrue(Files.isRegularFile(file));
+
+    FileTools.prune(path);
+    assertFalse(Files.isDirectory(path));
   }
 }

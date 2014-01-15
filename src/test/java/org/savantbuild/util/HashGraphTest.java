@@ -15,6 +15,7 @@
  */
 package org.savantbuild.util;
 
+import org.savantbuild.BaseUnitTest;
 import org.savantbuild.util.Graph.Edge;
 import org.savantbuild.util.Graph.Edge.BaseEdge;
 import org.savantbuild.util.Graph.Path;
@@ -38,8 +39,7 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Brian Pontarelli
  */
-@Test(groups = "unit")
-public class HashGraphTest {
+public class HashGraphTest extends BaseUnitTest {
   public HashGraph<String, String> graph;
 
   public HashGraphTest() {
@@ -341,6 +341,44 @@ public class HashGraphTest {
 
     assertEquals(origins, asList("one", "two", "three", "two", "one", "three"));
     assertEquals(destinations, asList("two", "three", "five", "four", "three", "five"));
+  }
+
+  @Test
+  public void traverseUp() {
+    List<String> origins = new ArrayList<>();
+    List<String> destinations = new ArrayList<>();
+    graph.traverseUp("one", (origin, destination, edge, depth) -> {
+      System.out.println("" + origin + "-(" + edge + ")->" + destination + " depth: " + depth);
+      if (destination.equals("two")) {
+        assertEquals(origin, "one");
+        assertEquals(edge, "one-two");
+        assertEquals(depth, 1);
+      } else if (destination.equals("three") && origin.equals("one")) {
+        assertEquals(edge, "one-three");
+        assertEquals(depth, 1);
+      } else if (destination.equals("three") && origin.equals("two")) {
+        assertEquals(edge, "two-three");
+        assertEquals(depth, 2);
+      } else if (destination.equals("four")) {
+        assertEquals(origin, "two");
+        assertEquals(edge, "two-four");
+        assertEquals(depth, 2);
+      } else if (destination.equals("five")) {
+        assertEquals(origin, "three");
+        assertEquals(edge, "three-five");
+        if (origins.contains("three")) {
+          assertEquals(depth, 2);
+        } else {
+          assertEquals(depth, 3);
+        }
+      }
+
+      origins.add(origin);
+      destinations.add(destination);
+    });
+
+    assertEquals(origins, asList("three", "two", "two", "one", "three", "one"));
+    assertEquals(destinations, asList("five", "three", "four", "two", "five", "three"));
   }
 
   @Test
