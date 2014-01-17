@@ -50,7 +50,11 @@ public class JarBuilder {
 
   public JarBuilder fileSet(FileSet fileSet) throws IOException {
     if (Files.isRegularFile(fileSet.directory)) {
-      throw new IOException("The [fileSet.directory] path passed to the JarBuilder cannot be a file");
+      throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] is a file and must be a directory");
+    }
+
+    if (!Files.isDirectory(fileSet.directory)) {
+      throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] does not exist");
     }
 
     fileSets.add(fileSet);
