@@ -15,6 +15,7 @@
  */
 package org.savantbuild.util.jar;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +30,7 @@ import static java.util.Arrays.stream;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * Tests the JarBuilder.
@@ -48,10 +50,28 @@ public class JarBuilderTest extends BaseUnitTest {
     JarBuilder builder = new JarBuilder(path, projectDir);
     int count = builder.fileSet(new FileSet(Paths.get("src/main/java")))
                        .fileSet(new FileSet(Paths.get("src/test/java")))
+                       .optionalFileSet(new FileSet(Paths.get("doesNotExist")))
                        .build();
     assertTrue(Files.isReadable(path));
     assertJarContains(new JarFile(path.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
-    assertEquals(count, 24);
+    assertEquals(count, 26);
+  }
+
+  @Test
+  public void buildRequiredDirectoryFailure() throws Exception {
+    FileTools.prune(projectDir.resolve("build/test/jars"));
+
+    Path path = projectDir.resolve("build/test/jars/test.jar");
+    JarBuilder builder = new JarBuilder(path, projectDir);
+    try {
+      builder.fileSet(new FileSet(Paths.get("src/main/java")))
+             .fileSet(new FileSet(Paths.get("src/test/java")))
+             .fileSet(new FileSet(Paths.get("doesNotExist")))
+             .build();
+      fail("Should have failed");
+    } catch (IOException e) {
+      // Expected
+    }
   }
 }

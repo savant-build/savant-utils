@@ -31,6 +31,13 @@ public interface Output {
   void debug(String message, Object... values);
 
   /**
+   * Outputs a debug message with the stack trace for the given Throwable.
+   *
+   * @param t The Throwable to output.
+   */
+  void debug(Throwable t);
+
+  /**
    * Disables debug messages.
    */
   void disableDebug();

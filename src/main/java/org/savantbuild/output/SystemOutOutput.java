@@ -46,6 +46,13 @@ public class SystemOutOutput implements Output {
   }
 
   @Override
+  public void debug(Throwable t) {
+    if (debugEnabled) {
+      t.printStackTrace(out);
+    }
+  }
+
+  @Override
   public void disableDebug() {
     this.debugEnabled = false;
   }

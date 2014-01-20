@@ -49,11 +49,12 @@ public class JarBuilder {
   }
 
   public JarBuilder fileSet(FileSet fileSet) throws IOException {
-    if (Files.isRegularFile(fileSet.directory)) {
+    Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
+    if (Files.isRegularFile(resolvedDirectory)) {
       throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] is a file and must be a directory");
     }
 
-    if (!Files.isDirectory(fileSet.directory)) {
+    if (!Files.isDirectory(resolvedDirectory)) {
       throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] does not exist");
     }
 
@@ -67,6 +68,28 @@ public class JarBuilder {
 
   public JarBuilder fileSet(String directory) throws IOException {
     return fileSet(Paths.get(directory));
+  }
+
+  public JarBuilder optionalFileSet(FileSet fileSet) throws IOException {
+    Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
+    if (Files.isRegularFile(resolvedDirectory)) {
+      throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] is a file and must be a directory");
+    }
+
+    // Only add if it exists
+    if (Files.isDirectory(resolvedDirectory)) {
+      fileSets.add(fileSet);
+    }
+
+    return this;
+  }
+
+  public JarBuilder optionalFileSet(Path directory) throws IOException {
+    return optionalFileSet(new FileSet(directory));
+  }
+
+  public JarBuilder optionalFileSet(String directory) throws IOException {
+    return optionalFileSet(Paths.get(directory));
   }
 
   public int build() throws IOException {
