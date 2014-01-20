@@ -42,6 +42,23 @@ import static org.testng.Assert.assertTrue;
 public class HashGraphTest extends BaseUnitTest {
   public HashGraph<String, String> graph;
 
+  /**
+   * Graph:
+   * <p/>
+   * <pre>
+   *   one --(one-two)--> two --(two-three)--> three --(three-five)--> five
+   *    |                  |                    /\
+   *    |              (two-four)               |
+   *    |                  |                    |
+   *    |                  \/                   |
+   *    |                four                   |
+   *    |                                       |
+   *    |                                       |
+   *    |--------------(one-three)--------------|
+   * </pre>
+   *
+   * @throws Exception
+   */
   public HashGraphTest() {
     graph = new HashGraph<>();
     graph.addEdge("one", "two", "one-two");
@@ -307,7 +324,7 @@ public class HashGraphTest extends BaseUnitTest {
   public void traverse() {
     List<String> origins = new ArrayList<>();
     List<String> destinations = new ArrayList<>();
-    graph.traverse("one", (origin, destination, edge, depth) -> {
+    graph.traverse("one", false, (origin, destination, edge, depth) -> {
       System.out.println("" + origin + "-(" + edge + ")->" + destination + " depth: " + depth);
       if (destination.equals("two")) {
         assertEquals(origin, "one");
@@ -341,6 +358,46 @@ public class HashGraphTest extends BaseUnitTest {
 
     assertEquals(origins, asList("one", "two", "three", "two", "one", "three"));
     assertEquals(destinations, asList("two", "three", "five", "four", "three", "five"));
+  }
+
+  @Test
+  public void traverseOnce() {
+    List<String> origins = new ArrayList<>();
+    List<String> destinations = new ArrayList<>();
+    graph.traverse("one", true, (origin, destination, edge, depth) -> {
+      System.out.println("" + origin + "-(" + edge + ")->" + destination + " depth: " + depth);
+      if (destination.equals("two")) {
+        assertEquals(origin, "one");
+        assertEquals(edge, "one-two");
+        assertEquals(depth, 1);
+      } else if (destination.equals("three") && origin.equals("one")) {
+        assertEquals(edge, "one-three");
+        assertEquals(depth, 1);
+      } else if (destination.equals("three") && origin.equals("two")) {
+        assertEquals(edge, "two-three");
+        assertEquals(depth, 2);
+      } else if (destination.equals("four")) {
+        assertEquals(origin, "two");
+        assertEquals(edge, "two-four");
+        assertEquals(depth, 2);
+      } else if (destination.equals("five")) {
+        assertEquals(origin, "three");
+        assertEquals(edge, "three-five");
+        if (origins.contains("three")) {
+          assertEquals(depth, 2);
+        } else {
+          assertEquals(depth, 3);
+        }
+      }
+
+      origins.add(origin);
+      destinations.add(destination);
+
+      return true;
+    });
+
+    assertEquals(origins, asList("one", "two", "three", "two"));
+    assertEquals(destinations, asList("two", "three", "five", "four"));
   }
 
   @Test

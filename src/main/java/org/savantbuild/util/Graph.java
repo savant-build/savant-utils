@@ -139,11 +139,14 @@ public interface Graph<T, U> {
    * Traverses the graph in a depth-first manner starting at the node whose value is given. The GraphConsumer is called
    * for each edge in the graph.
    *
-   * @param rootValue The value of the node to start the traversal from.
-   * @param consumer  The GraphConsumer that is called for each edge.
+   * @param rootValue      The value of the node to start the traversal from.
+   * @param visitNodesOnce Determines if nodes should be visited once or multiple times during the traversal. Graphs can
+   *                       have nodes with multiple links to them. Therefore, a traversal might visit the same node
+   *                       twice. This flag determines if the traversal should visit nodes once only.
+   * @param consumer       The GraphConsumer that is called for each edge.
    * @throws CyclicException If there is a cycle in the graph.
    */
-  void traverse(T rootValue, GraphConsumer<T, U> consumer) throws CyclicException;
+  void traverse(T rootValue, boolean visitNodesOnce, GraphConsumer<T, U> consumer) throws CyclicException;
 
   /**
    * Traverses the graph in a depth-first manner ending at the node whose value is given. This traverses down the Graph

@@ -147,7 +147,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
   public List<Path<T>> getPaths(T origin, T destination) {
     List<Path<T>> paths = new ArrayList<>();
     LinkedList<T> current = new LinkedList<>();
-    traverse(origin, (originValue, destinationValue, edgeValue, depth) -> {
+    traverse(origin, false, (originValue, destinationValue, edgeValue, depth) -> {
       if (depth == 1) {
         current.clear();
         current.add(origin);
@@ -219,19 +219,21 @@ public class HashGraph<T, U> implements Graph<T, U> {
    * Performs a depth first traversal of the graph. For each node, the GraphConsumer is called. The traversal WILL
    * traverse the same node twice if it has multiple connections.
    *
-   * @param rootValue The value of the node to start the traversal from.
-   * @param consumer  The GraphConsumer that is called for each edge.
+   * @param rootValue      The value of the node to start the traversal from.
+   * @param visitNodesOnce Determines if nodes are visited once if they have multiple links.
+   * @param consumer       The GraphConsumer that is called for each edge.
    * @throws CyclicException If there is a cycle in the graph.
    */
   @Override
-  public void traverse(T rootValue, GraphConsumer<T, U> consumer) throws CyclicException {
+  public void traverse(T rootValue, boolean visitNodesOnce, GraphConsumer<T, U> consumer) throws CyclicException {
     HashNode<T, U> rootNode = nodes.get(rootValue);
     if (rootNode == null) {
       throw new IllegalArgumentException("Invalid rootValue [" + rootValue + "] to start the traversal from.");
     }
 
+    Set<T> cycleCheck = new HashSet<>();
     Set<T> visited = new HashSet<>();
-    traverse(rootNode, visited, consumer, 1);
+    traverse(rootNode, visitNodesOnce, cycleCheck, visited, consumer, 1);
   }
 
   /**
@@ -306,20 +308,26 @@ public class HashGraph<T, U> implements Graph<T, U> {
     return null;
   }
 
-  private void traverse(HashNode<T, U> root, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
+  private void traverse(HashNode<T, U> root, boolean visitNodesOnce, Set<T> cycleCheck, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
     root.outbound.forEach((edge) -> {
-      if (visited.contains(edge.destination.value)) {
+      if (cycleCheck.contains(edge.destination.value)) {
         throw new CyclicException("Encountered the graph node [" + edge.destination.value + "] twice. Your graph has a cycle");
       }
 
-      visited.add(root.value);
-
-      boolean cont = consumer.consume(root.value, edge.destination.value, edge.value, depth);
-      if (cont) {
-        traverse(edge.destination, visited, consumer, depth + 1);
+      if (visitNodesOnce && visited.contains(edge.destination.value)) {
+        return;
       }
 
-      visited.remove(root.value);
+      cycleCheck.add(root.value);
+
+      boolean cont = consumer.consume(root.value, edge.destination.value, edge.value, depth);
+      visited.add(edge.destination.value);
+
+      if (cont) {
+        traverse(edge.destination, visitNodesOnce, cycleCheck, visited, consumer, depth + 1);
+      }
+
+      cycleCheck.remove(root.value);
     });
   }
 

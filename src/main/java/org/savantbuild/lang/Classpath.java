@@ -30,7 +30,7 @@ import java.util.List;
  * @author Brian Pontarelli
  */
 public class Classpath {
-  private final List<String> paths = new ArrayList<>();
+  public final List<String> paths = new ArrayList<>();
 
   /**
    * Constructs a Classpath with the given initial parts.
