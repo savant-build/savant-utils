@@ -41,20 +41,20 @@ public class JarBuilder {
 
   public final Path file;
 
-  public final Path baseDir;
+  public JarBuilder(String file) {
+    this.file = Paths.get(file);
+  }
 
-  public JarBuilder(Path file, Path baseDir) {
+  public JarBuilder(Path file) {
     this.file = file;
-    this.baseDir = baseDir;
   }
 
   public JarBuilder fileSet(FileSet fileSet) throws IOException {
-    Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
-    if (Files.isRegularFile(resolvedDirectory)) {
+    if (Files.isRegularFile(fileSet.directory)) {
       throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] is a file and must be a directory");
     }
 
-    if (!Files.isDirectory(resolvedDirectory)) {
+    if (!Files.isDirectory(fileSet.directory)) {
       throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] does not exist");
     }
 
@@ -71,13 +71,12 @@ public class JarBuilder {
   }
 
   public JarBuilder optionalFileSet(FileSet fileSet) throws IOException {
-    Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
-    if (Files.isRegularFile(resolvedDirectory)) {
+    if (Files.isRegularFile(fileSet.directory)) {
       throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] is a file and must be a directory");
     }
 
     // Only add if it exists
-    if (Files.isDirectory(resolvedDirectory)) {
+    if (Files.isDirectory(fileSet.directory)) {
       fileSets.add(fileSet);
     }
 
@@ -100,11 +99,10 @@ public class JarBuilder {
     AtomicInteger count = new AtomicInteger(0);
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
-        Path resolvedDirectory = fileSet.directory.isAbsolute() ? fileSet.directory : baseDir.resolve(fileSet.directory);
-        Files.walkFileTree(resolvedDirectory, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(fileSet.directory, new SimpleFileVisitor<Path>() {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            Path relativePath = file.subpath(resolvedDirectory.getNameCount(), file.getNameCount());
+            Path relativePath = file.subpath(fileSet.directory.getNameCount(), file.getNameCount());
             JarEntry entry = new JarEntry(relativePath.toString());
             entry.setCreationTime((FileTime) Files.getAttribute(file, "creationTime"));
             entry.setLastAccessTime((FileTime) Files.getAttribute(file, "lastAccessTime"));

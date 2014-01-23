@@ -34,35 +34,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Brian Pontarelli
  */
 public class Copier {
-  public final Path baseDirectory;
-
-  public Path to;
+  public final Path to;
 
   public List<FileSet> fileSets = new ArrayList<>();
 
-  public Copier() {
-    this.baseDirectory = Paths.get("");
+  public Copier(Path to) {
+    this.to = to;
   }
 
-  public Copier(Path baseDirectory) {
-    this.baseDirectory = baseDirectory;
+  public Copier(String to) {
+    this.to = Paths.get(to);
   }
 
   public int copy() throws IOException {
-    Path absoluteTo = to.isAbsolute() ? to : baseDirectory.resolve(to);
-
     AtomicInteger count = new AtomicInteger(0);
     for (FileSet fileSet : fileSets) {
-      Path resolvedFrom = fileSet.directory.isAbsolute() ? fileSet.directory : baseDirectory.resolve(fileSet.directory);
-      if (!Files.isDirectory(resolvedFrom)) {
+      if (!Files.isDirectory(fileSet.directory)) {
         continue;
       }
 
-      Files.walkFileTree(resolvedFrom, new SimpleFileVisitor<Path>() {
+      Files.walkFileTree(fileSet.directory, new SimpleFileVisitor<Path>() {
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-          Path relativeDestination = file.subpath(resolvedFrom.getNameCount(), file.getNameCount());
-          Path resolvedDestination = absoluteTo.resolve(relativeDestination);
+          Path relativeDestination = file.subpath(fileSet.directory.getNameCount(), file.getNameCount());
+          Path resolvedDestination = to.resolve(relativeDestination);
           Files.createDirectories(resolvedDestination.getParent());
           Files.copy(file, resolvedDestination, StandardCopyOption.REPLACE_EXISTING);
           count.incrementAndGet();
@@ -89,18 +84,5 @@ public class Copier {
 
   public Copier fileSet(String directory) throws IOException {
     return fileSet(Paths.get(directory));
-  }
-
-  public Copier to(Path to) throws IOException {
-    if (Files.isRegularFile(to)) {
-      throw new IOException("The [to] path passed to the Copier cannot be a file");
-    }
-
-    this.to = to;
-    return this;
-  }
-
-  public Copier to(String to) throws IOException {
-    return to(Paths.get(to));
   }
 }

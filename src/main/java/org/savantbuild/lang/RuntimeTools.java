@@ -27,7 +27,7 @@ public class RuntimeTools {
   public static boolean exec(String... command) throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.redirectErrorStream(true);
-    System.out.println(builder.command());
+
     Process process = builder.start();
     InputStream is = process.getInputStream();
     byte[] buf = new byte[1024];
@@ -35,6 +35,7 @@ public class RuntimeTools {
     while ((length = is.read(buf)) != -1) {
       System.out.println(new String(buf, 0, length, "UTF-8"));
     }
+
     return process.waitFor() == 0;
   }
 }

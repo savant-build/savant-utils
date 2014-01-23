@@ -15,12 +15,11 @@
  */
 package org.savantbuild.io;
 
-import org.savantbuild.BaseUnitTest;
-import org.testng.annotations.Test;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import org.savantbuild.BaseUnitTest;
+import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertTrue;
 
@@ -36,9 +35,8 @@ public class CopierTest extends BaseUnitTest {
     Path toDir = projectDir.resolve("build/test/copy");
     FileTools.prune(toDir);
 
-    Copier copier = new Copier(projectDir);
-    copier.to(Paths.get("build/test/copy"))
-          .fileSet(Paths.get("src/main/java"))
+    Copier copier = new Copier(projectDir.resolve("build/test/copy"));
+    copier.fileSet(projectDir.resolve("src/main/java"))
           .copy();
 
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/Copier.java")));

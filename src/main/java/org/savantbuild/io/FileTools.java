@@ -38,6 +38,24 @@ import java.util.stream.Stream;
  */
 public class FileTools {
   /**
+   * Converts the object to a Path.
+   *
+   * @param object The object.
+   * @return The object as a path.
+   */
+  public static Path toPath(Object object) {
+    if (object == null) {
+      return null;
+    }
+
+    if (object instanceof Path) {
+      return (Path) object;
+    }
+
+    return Paths.get(object.toString());
+  }
+
+  /**
    * Creates a temporary file.
    *
    * @param prefix       The prefix for the temporary file.
