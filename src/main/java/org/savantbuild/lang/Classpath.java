@@ -20,9 +20,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Models a Classpath.
@@ -30,7 +32,7 @@ import java.util.List;
  * @author Brian Pontarelli
  */
 public class Classpath {
-  public final List<String> paths = new ArrayList<>();
+  public final List<Path> paths = new ArrayList<>();
 
   /**
    * Constructs a Classpath with the given initial parts.
@@ -38,7 +40,9 @@ public class Classpath {
    * @param paths The paths to add to the Classpath on construction.
    */
   public Classpath(String... paths) {
-    Collections.addAll(this.paths, paths);
+    for (String path : paths) {
+      this.paths.add(Paths.get(path));
+    }
   }
 
   /**
@@ -48,7 +52,7 @@ public class Classpath {
    * @return This Classpath.
    */
   public Classpath path(String path) {
-    paths.add(path);
+    paths.add(Paths.get(path));
     return this;
   }
 
@@ -59,7 +63,7 @@ public class Classpath {
    * @return This Classpath.
    */
   public Classpath path(Path path) {
-    paths.add(path.toString());
+    paths.add(path);
     return this;
   }
 
@@ -70,7 +74,7 @@ public class Classpath {
    * @return This Classpath.
    */
   public Classpath path(File file) {
-    paths.add(file.toString());
+    paths.add(file.toPath());
     return this;
   }
 
@@ -81,9 +85,7 @@ public class Classpath {
    * @return This Classpath.
    */
   public Classpath paths(Path... paths) {
-    for (Path path : paths) {
-      this.paths.add(path.toString());
-    }
+    Collections.addAll(this.paths, paths);
     return this;
   }
 
@@ -98,7 +100,7 @@ public class Classpath {
       return "";
     }
 
-    return String.join(File.pathSeparator, paths);
+    return String.join(File.pathSeparator, paths.stream().map(Path::toString).collect(Collectors.toList()));
   }
 
   /**
@@ -118,9 +120,9 @@ public class Classpath {
 
   public URLClassLoader toURLClassLoader() throws IllegalStateException {
     List<URL> urls = new ArrayList<>();
-    for (String path : paths) {
+    for (Path path : paths) {
       try {
-        urls.add(new File(path).toURI().toURL());
+        urls.add(path.toUri().toURL());
       } catch (MalformedURLException e) {
         // Very unexpected, rethrow as a plain IllegalStateException
         throw new IllegalStateException(e);

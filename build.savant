@@ -19,7 +19,7 @@ project(group: "org.savantbuild", name: "savant-utils", version: "0.1.0", licens
   }
 
   dependencies {
-    group(type: "test-compile") {
+    group(type: "test-compile", export: false) {
       dependency(id: "org.testng:testng:6.8.7")
     }
   }

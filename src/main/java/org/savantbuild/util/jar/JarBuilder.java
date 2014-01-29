@@ -15,14 +15,11 @@
  */
 package org.savantbuild.util.jar;
 
+import java.io.IOError;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -99,20 +96,19 @@ public class JarBuilder {
     AtomicInteger count = new AtomicInteger(0);
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
-        Files.walkFileTree(fileSet.directory, new SimpleFileVisitor<Path>() {
-          @Override
-          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            Path relativePath = file.subpath(fileSet.directory.getNameCount(), file.getNameCount());
-            JarEntry entry = new JarEntry(relativePath.toString());
-            entry.setCreationTime((FileTime) Files.getAttribute(file, "creationTime"));
-            entry.setLastAccessTime((FileTime) Files.getAttribute(file, "lastAccessTime"));
-            entry.setLastModifiedTime(Files.getLastModifiedTime(file));
-            entry.setTime(Files.getLastModifiedTime(file).toMillis());
-            entry.setSize((Long) Files.getAttribute(file, "size"));
+        fileSet.toFileInfos().forEach((info) -> {
+          try {
+            JarEntry entry = new JarEntry(info.relative.toString());
+            entry.setCreationTime(info.creationTime);
+            entry.setLastAccessTime(info.lastAccessTime);
+            entry.setLastModifiedTime(info.lastModifiedTime);
+            entry.setTime(info.lastModifiedTime.toMillis());
+            entry.setSize(info.size);
             jos.putNextEntry(entry);
             Files.copy(file, jos);
             count.incrementAndGet();
-            return FileVisitResult.CONTINUE;
+          } catch (IOException e) {
+            throw new IOError(e);
           }
         });
       }

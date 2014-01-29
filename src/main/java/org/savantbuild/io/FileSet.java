@@ -15,10 +15,20 @@
  */
 package org.savantbuild.io;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Currently models a directory.
+ * A FileSet represents a set of files within a directory. Currently, this only models all of the files contained in a
+ * directory and all sub-directories below it.
  *
  * @author Brian Pontarelli
  */
@@ -27,5 +37,32 @@ public class FileSet {
 
   public FileSet(Path directory) {
     this.directory = directory;
+  }
+
+  /**
+   * Converts this FileSet to a list of FileInfo objects. The info objects contain the origin Path and a relative Path.
+   * They also include additional information about the file.
+   *
+   * @return A List of FileInfo objects for this FileSet.
+   * @throws IOException If the directory traversal fails.
+   */
+  public List<FileInfo> toFileInfos() throws IOException {
+    List<FileInfo> results = new ArrayList<>();
+    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Path relativePath = file.subpath(directory.getNameCount(), file.getNameCount());
+        FileInfo info = new FileInfo(file, relativePath);
+        info.creationTime = (FileTime) Files.getAttribute(file, "creationTime");
+        info.lastAccessTime = (FileTime) Files.getAttribute(file, "lastAccessTime");
+        info.lastModifiedTime = Files.getLastModifiedTime(file);
+        info.size = (Long) Files.getAttribute(file, "size");
+        info.permissions = Files.getPosixFilePermissions(file, LinkOption.NOFOLLOW_LINKS);
+        results.add(info);
+        return FileVisitResult.CONTINUE;
+      }
+    });
+
+    return results;
   }
 }
