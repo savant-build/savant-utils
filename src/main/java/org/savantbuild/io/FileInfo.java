@@ -77,40 +77,53 @@ public class FileInfo {
     return result;
   }
 
+  /**
+   * Converts the file permissions of this FileInfo to a POSIX bit mapped mode. The bit map looks like this:
+   * <p>
+   * <pre>
+   *   1_000_000_001_000_000
+   * </pre>
+   * <p>
+   * The first bit is always set. The next three bits are the set UID bits, the next 3 bits are the set GID bits. The
+   * next three bits are the owner permissions (read, write, execute), then the group permissions and finally the user
+   * permissions.
+   *
+   * @return The POSIX mode bit map as an integer.
+   */
   public int toMode() {
     if (permissions == null || permissions.isEmpty()) {
-      return 666;
+      return 0b1_000_000_110_100_100;
     }
 
-    int mode = 0;
+    int mode = 0b1_000_000_000_000_000;
     for (PosixFilePermission permission : permissions) {
-      switch(permission) {
+      switch (permission) {
         case GROUP_EXECUTE:
-          mode += 10;
+          mode |= 0b001_000;
           break;
         case GROUP_READ:
-          mode += 40;
+          mode |= 0b100_000;
           break;
         case GROUP_WRITE:
-          mode += 20;
+          mode |= 0b010_000;
           break;
         case OTHERS_EXECUTE:
-          mode += 1;
+          mode |= 0b001;
           break;
         case OTHERS_READ:
-          mode += 4;
+          mode |= 0b100;
           break;
         case OTHERS_WRITE:
-          mode += 2;
+          mode |= 0b010;
           break;
         case OWNER_EXECUTE:
-          mode += 100;
+          mode |= 0b001_000_000;
           break;
         case OWNER_READ:
-          mode += 400;
+          mode |= 0b100_000_000;
           break;
         case OWNER_WRITE:
-          mode += 200;
+          mode |= 0b010_000_000;
           break;
       }
     }

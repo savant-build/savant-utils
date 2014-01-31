@@ -43,42 +43,42 @@ public class FileInfoTest extends BaseUnitTest {
   public void toMode() {
     FileInfo info = new FileInfo(Paths.get(""), Paths.get(""));
     info.permissions = new HashSet<>(asList(GROUP_EXECUTE, OTHERS_EXECUTE, OWNER_EXECUTE));
-    assertEquals(info.toMode(), 111);
+    assertEquals(info.toMode(), 0b1_000_000_001_001_001);
 
     info.permissions = new HashSet<>(asList(GROUP_WRITE, OTHERS_WRITE, OWNER_WRITE));
-    assertEquals(info.toMode(), 222);
+    assertEquals(info.toMode(), 0b1_000_000_010_010_010);
 
     info.permissions = new HashSet<>(asList(GROUP_READ, OTHERS_READ, OWNER_READ));
-    assertEquals(info.toMode(), 444);
+    assertEquals(info.toMode(), 0b1_000_000_100_100_100);
 
     info.permissions = new HashSet<>(asList(GROUP_EXECUTE));
-    assertEquals(info.toMode(), 10);
+    assertEquals(info.toMode(), 0b1_000_000_000_001_000);
 
     info.permissions = new HashSet<>(asList(GROUP_EXECUTE, GROUP_READ));
-    assertEquals(info.toMode(), 50);
+    assertEquals(info.toMode(), 0b1_000_000_000_101_000);
 
     info.permissions = new HashSet<>(asList(GROUP_EXECUTE, GROUP_READ, GROUP_WRITE));
-    assertEquals(info.toMode(), 70);
+    assertEquals(info.toMode(), 0b1_000_000_000_111_000);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE));
-    assertEquals(info.toMode(), 100);
+    assertEquals(info.toMode(), 0b1_000_000_001_000_000);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE, OWNER_READ));
-    assertEquals(info.toMode(), 500);
+    assertEquals(info.toMode(), 0b1_000_000_101_000_000);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE));
-    assertEquals(info.toMode(), 700);
+    assertEquals(info.toMode(), 0b1_000_000_111_000_000);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE, GROUP_EXECUTE));
-    assertEquals(info.toMode(), 110);
+    assertEquals(info.toMode(), 0b1_000_000_001_001_000);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE, OWNER_READ, GROUP_READ));
-    assertEquals(info.toMode(), 540);
+    assertEquals(info.toMode(), 0b1_000_000_101_100_000);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE, OWNER_READ, GROUP_READ, OTHERS_EXECUTE));
-    assertEquals(info.toMode(), 541);
+    assertEquals(info.toMode(), 0b1_000_000_101_100_001);
 
     info.permissions = new HashSet<>(asList(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE, GROUP_EXECUTE, GROUP_READ, GROUP_WRITE, OTHERS_EXECUTE, OTHERS_READ, OTHERS_WRITE));
-    assertEquals(info.toMode(), 777);
+    assertEquals(info.toMode(), 0b1_000_000_111_111_111);
   }
 }
