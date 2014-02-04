@@ -15,10 +15,13 @@
  */
 package org.savantbuild.util.jar;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 
 import org.savantbuild.BaseUnitTest;
 import org.savantbuild.io.FileSet;
@@ -41,6 +44,31 @@ public class JarBuilderTest extends BaseUnitTest {
     stream(entries).forEach((entry) -> assertNotNull(jarFile.getEntry(entry), "Jar [" + jarFile + "] is missing entry [" + entry + "]"));
   }
 
+  private static void assertJarFileEquals(Path jarFile, String entry, Path original) throws IOException {
+    JarInputStream jis = new JarInputStream(Files.newInputStream(jarFile));
+    JarEntry jarEntry = jis.getNextJarEntry();
+    while (jarEntry != null && !jarEntry.getName().equals(entry)) {
+      jarEntry = jis.getNextJarEntry();
+    }
+
+    if (jarEntry == null) {
+      fail("Jar [" + jarFile + "] is missing entry [" + entry + "]");
+    }
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    byte[] buf = new byte[1024];
+    int length;
+    while ((length = jis.read(buf)) != -1) {
+      baos.write(buf, 0, length);
+    }
+
+    assertEquals(Files.readAllBytes(original), baos.toByteArray());
+    assertEquals(jarEntry.getSize(), Files.size(original));
+    assertEquals(jarEntry.getCreationTime(), Files.getAttribute(original, "creationTime"));
+    assertEquals(jarEntry.getLastModifiedTime(), Files.getLastModifiedTime(original));
+    assertEquals(jarEntry.getTime(), Files.getLastModifiedTime(original).toMillis());
+  }
+
   @Test
   public void build() throws Exception {
     FileTools.prune(projectDir.resolve("build/test/jars"));
@@ -54,23 +82,8 @@ public class JarBuilderTest extends BaseUnitTest {
     assertTrue(Files.isReadable(file));
     assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
-    assertEquals(count, 27);
-  }
-
-  @Test
-  public void buildStrings() throws Exception {
-    FileTools.prune(projectDir.resolve("build/test/jars"));
-
-    Path file = projectDir.resolve("build/test/jars/test.jar");
-    JarBuilder builder = new JarBuilder(file.toString());
-    int count = builder.fileSet(projectDir.resolve("src/main/java").toString())
-                       .fileSet(projectDir.resolve("src/test/java").toString())
-                       .optionalFileSet("doesNotExist")
-                       .build();
-    assertTrue(Files.isReadable(file));
-    assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
-        "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
-    assertEquals(count, 27);
+    assertJarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
+    assertEquals(count, 32);
   }
 
   @Test
@@ -88,5 +101,22 @@ public class JarBuilderTest extends BaseUnitTest {
     } catch (IOException e) {
       // Expected
     }
+  }
+
+  @Test
+  public void buildStrings() throws Exception {
+    FileTools.prune(projectDir.resolve("build/test/jars"));
+
+    Path file = projectDir.resolve("build/test/jars/test.jar");
+    JarBuilder builder = new JarBuilder(file.toString());
+    int count = builder.fileSet(projectDir.resolve("src/main/java").toString())
+                       .fileSet(projectDir.resolve("src/test/java").toString())
+                       .optionalFileSet("doesNotExist")
+                       .build();
+    assertTrue(Files.isReadable(file));
+    assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
+        "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
+    assertJarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
+    assertEquals(count, 32);
   }
 }

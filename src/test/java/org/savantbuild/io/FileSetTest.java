@@ -35,8 +35,9 @@ public class FileSetTest extends BaseUnitTest {
   public void toFileInfos() throws Exception {
     FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"));
     List<FileInfo> infos = fileSet.toFileInfos();
-    assertEquals(infos.size(), 18);
+    assertEquals(infos.size(), 19);
     assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
+        projectDir.resolve("src/main/java/org/savantbuild/io/ArchiveFileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"),
@@ -57,6 +58,7 @@ public class FileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/util/jar/JarBuilder.java")
     ));
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
+        Paths.get("org/savantbuild/io/ArchiveFileSet.java"),
         Paths.get("org/savantbuild/io/Copier.java"),
         Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileSet.java"),

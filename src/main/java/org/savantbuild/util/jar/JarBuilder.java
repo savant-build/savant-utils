@@ -105,7 +105,9 @@ public class JarBuilder {
             entry.setTime(info.lastModifiedTime.toMillis());
             entry.setSize(info.size);
             jos.putNextEntry(entry);
-            Files.copy(file, jos);
+            Files.copy(info.origin, jos);
+            jos.flush();
+            jos.closeEntry();
             count.incrementAndGet();
           } catch (IOException e) {
             throw new IOError(e);
