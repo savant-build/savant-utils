@@ -15,7 +15,6 @@
  */
 package org.savantbuild.util.jar;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
+import org.savantbuild.io.FileInfo;
 import org.savantbuild.io.FileSet;
 
 /**
@@ -96,23 +96,19 @@ public class JarBuilder {
     AtomicInteger count = new AtomicInteger(0);
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
-        fileSet.toFileInfos().forEach((info) -> {
-          try {
-            JarEntry entry = new JarEntry(info.relative.toString());
-            entry.setCreationTime(info.creationTime);
-            entry.setLastAccessTime(info.lastAccessTime);
-            entry.setLastModifiedTime(info.lastModifiedTime);
-            entry.setTime(info.lastModifiedTime.toMillis());
-            entry.setSize(info.size);
-            jos.putNextEntry(entry);
-            Files.copy(info.origin, jos);
-            jos.flush();
-            jos.closeEntry();
-            count.incrementAndGet();
-          } catch (IOException e) {
-            throw new IOError(e);
-          }
-        });
+        for (FileInfo fileInfo : fileSet.toFileInfos()) {
+          JarEntry entry = new JarEntry(fileInfo.relative.toString());
+          entry.setCreationTime(fileInfo.creationTime);
+          entry.setLastAccessTime(fileInfo.lastAccessTime);
+          entry.setLastModifiedTime(fileInfo.lastModifiedTime);
+          entry.setTime(fileInfo.lastModifiedTime.toMillis());
+          entry.setSize(fileInfo.size);
+          jos.putNextEntry(entry);
+          Files.copy(fileInfo.origin, jos);
+          jos.flush();
+          jos.closeEntry();
+          count.incrementAndGet();
+        }
       }
     }
 

@@ -24,7 +24,12 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A FileSet represents a set of files within a directory. Currently, this only models all of the files contained in a
@@ -35,8 +40,16 @@ import java.util.List;
 public class FileSet {
   public final Path directory;
 
+  public final Set<Pattern> includePatterns = new HashSet<>();
+
   public FileSet(Path directory) {
     this.directory = directory;
+    this.includePatterns.addAll(includePatterns);
+  }
+
+  public FileSet(Path directory, Collection<Pattern> includePatterns) {
+    this.directory = directory;
+    this.includePatterns.addAll(includePatterns);
   }
 
   /**
@@ -63,6 +76,20 @@ public class FileSet {
       }
     });
 
-    return results;
+    return results.stream().filter(this::includeFileInfo).collect(Collectors.toList());
+  }
+
+  private boolean includeFileInfo(FileInfo fileInfo) {
+    if (includePatterns.isEmpty()) {
+      return true;
+    }
+
+    for (Pattern includePattern : includePatterns) {
+      if (includePattern.asPredicate().test(fileInfo.relative.toString())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

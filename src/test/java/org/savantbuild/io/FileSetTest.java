@@ -17,6 +17,7 @@ package org.savantbuild.io;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.savantbuild.BaseUnitTest;
@@ -35,7 +36,6 @@ public class FileSetTest extends BaseUnitTest {
   public void toFileInfos() throws Exception {
     FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"));
     List<FileInfo> infos = fileSet.toFileInfos();
-    assertEquals(infos.size(), 19);
     assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
         projectDir.resolve("src/main/java/org/savantbuild/io/ArchiveFileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
@@ -77,6 +77,28 @@ public class FileSetTest extends BaseUnitTest {
         Paths.get("org/savantbuild/util/Graph.java"),
         Paths.get("org/savantbuild/util/HashGraph.java"),
         Paths.get("org/savantbuild/util/jar/JarBuilder.java")
+    ));
+  }
+
+  @Test
+  public void toFileInfosWithIncludePatterns() throws Exception {
+    FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*")));
+    List<FileInfo> infos = fileSet.toFileInfos();
+    assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
+        projectDir.resolve("src/main/java/org/savantbuild/io/ArchiveFileSet.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/IOTools.java")
+    ));
+    assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
+        Paths.get("org/savantbuild/io/ArchiveFileSet.java"),
+        Paths.get("org/savantbuild/io/Copier.java"),
+        Paths.get("org/savantbuild/io/FileInfo.java"),
+        Paths.get("org/savantbuild/io/FileSet.java"),
+        Paths.get("org/savantbuild/io/FileTools.java"),
+        Paths.get("org/savantbuild/io/IOTools.java")
     ));
   }
 }

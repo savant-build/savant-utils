@@ -17,10 +17,13 @@ package org.savantbuild.io;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 
 import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
+import static java.util.Arrays.asList;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -42,5 +45,19 @@ public class CopierTest extends BaseUnitTest {
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/Copier.java")));
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/FileTools.java")));
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/lang/Classpath.java")));
+  }
+
+  @Test
+  public void copyIncludePatterns() throws Exception {
+    Path toDir = projectDir.resolve("build/test/copy");
+    FileTools.prune(toDir);
+
+    Copier copier = new Copier(projectDir.resolve("build/test/copy"));
+    copier.fileSet(new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*"))))
+        .copy();
+
+    assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/Copier.java")));
+    assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/FileTools.java")));
+    assertFalse(Files.isRegularFile(toDir.resolve("org/savantbuild/lang/Classpath.java")));
   }
 }

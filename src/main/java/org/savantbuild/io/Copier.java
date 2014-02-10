@@ -16,13 +16,9 @@
 package org.savantbuild.io;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,21 +45,17 @@ public class Copier {
   public int copy() throws IOException {
     AtomicInteger count = new AtomicInteger(0);
     for (FileSet fileSet : fileSets) {
+      // Skip missing source directories
       if (!Files.isDirectory(fileSet.directory)) {
         continue;
       }
 
-      Files.walkFileTree(fileSet.directory, new SimpleFileVisitor<Path>() {
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-          Path relativeDestination = file.subpath(fileSet.directory.getNameCount(), file.getNameCount());
-          Path resolvedDestination = to.resolve(relativeDestination);
-          Files.createDirectories(resolvedDestination.getParent());
-          Files.copy(file, resolvedDestination, StandardCopyOption.REPLACE_EXISTING);
-          count.incrementAndGet();
-          return FileVisitResult.CONTINUE;
-        }
-      });
+      for (FileInfo fileInfo : fileSet.toFileInfos()) {
+        Path target = to.resolve(fileInfo.relative);
+        Files.createDirectories(target.getParent());
+        Files.copy(fileInfo.origin, target);
+        count.incrementAndGet();
+      }
     }
 
     return count.get();
@@ -72,6 +64,10 @@ public class Copier {
   public Copier fileSet(FileSet fileSet) throws IOException {
     if (Files.isRegularFile(fileSet.directory)) {
       throw new IOException("The [fileSet.directory] path passed to the Copier cannot be a file");
+    }
+
+    if (!Files.isDirectory(fileSet.directory)) {
+      throw new IOException("The [fileSet.directory] path passed to the Copier must be a valid directory.");
     }
 
     this.fileSets.add(fileSet);
@@ -84,5 +80,26 @@ public class Copier {
 
   public Copier fileSet(String directory) throws IOException {
     return fileSet(Paths.get(directory));
+  }
+
+  public Copier optionalFileSet(FileSet fileSet) throws IOException {
+    if (Files.isRegularFile(fileSet.directory)) {
+      throw new IOException("The [fileSet.directory] path passed to the Copier cannot be a file");
+    }
+
+    if (!Files.isDirectory(fileSet.directory)) {
+      return this;
+    }
+
+    this.fileSets.add(fileSet);
+    return this;
+  }
+
+  public Copier optionalFileSet(Path directory) throws IOException {
+    return optionalFileSet(new FileSet(directory));
+  }
+
+  public Copier optionalFileSet(String directory) throws IOException {
+    return optionalFileSet(Paths.get(directory));
   }
 }
