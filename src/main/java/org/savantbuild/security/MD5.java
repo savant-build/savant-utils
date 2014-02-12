@@ -15,8 +15,6 @@
  */
 package org.savantbuild.security;
 
-import org.savantbuild.lang.StringTools;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,6 +23,8 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import org.savantbuild.lang.StringTools;
 
 /**
  * This class is a simple holder for a MD5 checksum. It holds the sum and the file name. It can also hold the MD5 sum
@@ -54,7 +54,7 @@ public final class MD5 {
    * @return The MD5 and never null.
    * @throws IOException If the MD5 fails for any reason.
    */
-  public static MD5 fromBytes(byte[] bytes, String fileName) throws IOException {
+  public static MD5 forBytes(byte[] bytes, String fileName) throws IOException {
     MessageDigest digest = null;
     try {
       digest = MessageDigest.getInstance("MD5");
@@ -86,12 +86,12 @@ public final class MD5 {
    * @return The MD5 sum and never null.
    * @throws IOException If the file could not be MD5 summed.
    */
-  public static MD5 fromPath(Path path) throws IOException {
+  public static MD5 forPath(Path path) throws IOException {
     if (!Files.isRegularFile(path)) {
       throw new IllegalArgumentException("File to MD5 doesn't exist [" + path.toAbsolutePath() + "]");
     }
 
-    return MD5.fromBytes(Files.readAllBytes(path), path.getFileName().toString());
+    return MD5.forBytes(Files.readAllBytes(path), path.getFileName().toString());
   }
 
   /**
@@ -151,7 +151,12 @@ public final class MD5 {
    * @throws IOException If the write fails.
    */
   public static void writeMD5(MD5 md5, Path path) throws IOException {
-    Files.write(path, md5.sum.getBytes("UTF-8"));
+    String sum = md5.sum;
+    if (!sum.endsWith("\n")) {
+      sum += "\n";
+    }
+
+    Files.write(path, sum.getBytes("UTF-8"));
   }
 
   @Override
