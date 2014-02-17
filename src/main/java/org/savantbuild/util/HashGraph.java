@@ -40,7 +40,7 @@ import static java.util.Arrays.asList;
  * bi-directional and are called Edges. A two node graph with an edge between the nodes looks like this:
  * <p>
  * <pre>
- * node1 <---> node2
+ * node1 &lt;---&gt; node2
  * </pre>
  * <p>
  * The important point about Graphs is that they don't enforce a top level node that controls the entire structure like

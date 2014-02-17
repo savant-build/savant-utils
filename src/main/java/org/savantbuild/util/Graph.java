@@ -30,7 +30,7 @@ import java.util.function.Predicate;
  * bi-directional and are called Edges. A two node graph with an edge between the nodes looks like this:
  * <p>
  * <pre>
- * node1 <---> node2
+ * node1 &lt;---&gt; node2
  * </pre>
  * <p>
  * The important point about Graphs is that implementations don't need to enforce a top level node that controls the
