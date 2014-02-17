@@ -44,7 +44,7 @@ public class HashGraphTest extends BaseUnitTest {
 
   /**
    * Graph:
-   * <p/>
+   * <p>
    * <pre>
    *   one --(one-two)--> two --(two-three)--> three --(three-five)--> five
    *    |                  |                    /\
@@ -182,7 +182,7 @@ public class HashGraphTest extends BaseUnitTest {
 
   /**
    * Graph:
-   * <p/>
+   * <p>
    * <pre>
    *   one --> one-two --> one-three --|
    *       |                 /\        |
@@ -249,7 +249,7 @@ public class HashGraphTest extends BaseUnitTest {
 
   /**
    * Graph:
-   * <p/>
+   * <p>
    * <pre>
    *   one --> one-two --> one-three --|
    *       |                 /\        |
@@ -264,9 +264,9 @@ public class HashGraphTest extends BaseUnitTest {
    *       |   \/
    *       |-> three
    * </pre>
-   * <p/>
+   * <p>
    * Potential sub-graph to prune includes (in traversal order with duplicates):
-   * <p/>
+   * <p>
    * <pre>
    *   two
    *     four
