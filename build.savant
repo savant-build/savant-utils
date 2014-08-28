@@ -13,7 +13,9 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-project(group: "org.savantbuild", name: "savant-utils", version: "0.1.1", license: "Apachev2") {
+savantVersion = "0.2.0-{integration}"
+
+project(group: "org.savantbuild", name: "savant-utils", version: "0.2.0", license: "Apachev2") {
   workflow {
     standard()
   }
@@ -34,11 +36,11 @@ project(group: "org.savantbuild", name: "savant-utils", version: "0.1.1", licens
 }
 
 // Plugins
-dependency = loadPlugin(id: "org.savantbuild.plugin:dependency:0.1.1")
-java = loadPlugin(id: "org.savantbuild.plugin:java:0.1.1")
-javaTestNG = loadPlugin(id: "org.savantbuild.plugin:java-testng:0.1.1")
-idea = loadPlugin(id: "org.savantbuild.plugin:idea:0.1.1")
-release = loadPlugin(id: "org.savantbuild.plugin:release-git:0.1.1")
+dependency = loadPlugin(id: "org.savantbuild.plugin:dependency:${savantVersion}")
+java = loadPlugin(id: "org.savantbuild.plugin:java:${savantVersion}")
+javaTestNG = loadPlugin(id: "org.savantbuild.plugin:java-testng:${savantVersion}")
+idea = loadPlugin(id: "org.savantbuild.plugin:idea:${savantVersion}")
+release = loadPlugin(id: "org.savantbuild.plugin:release-git:${savantVersion}")
 
 // Plugin settings
 java.settings.javaVersion = "1.8"

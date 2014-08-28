@@ -64,11 +64,11 @@ public class Copier {
 
   public Copier fileSet(FileSet fileSet) throws IOException {
     if (Files.isRegularFile(fileSet.directory)) {
-      throw new IOException("The [fileSet.directory] path passed to the Copier cannot be a file");
+      throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] passed to the Copier cannot be a file");
     }
 
     if (!Files.isDirectory(fileSet.directory)) {
-      throw new IOException("The [fileSet.directory] path passed to the Copier must be a valid directory.");
+      throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] passed to the Copier must be a valid directory.");
     }
 
     this.fileSets.add(fileSet);
@@ -85,7 +85,7 @@ public class Copier {
 
   public Copier optionalFileSet(FileSet fileSet) throws IOException {
     if (Files.isRegularFile(fileSet.directory)) {
-      throw new IOException("The [fileSet.directory] path passed to the Copier cannot be a file");
+      throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] passed to the Copier cannot be a file");
     }
 
     if (!Files.isDirectory(fileSet.directory)) {

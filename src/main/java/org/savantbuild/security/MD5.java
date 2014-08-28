@@ -111,7 +111,7 @@ public final class MD5 {
 
     // Validate format (should be either only the md5sum or the sum plus the file name)
     if (str.length() < 32) {
-      throw new MD5Exception("Invalid md5sum [" + str + "]");
+      throw new MD5Exception("Invalid MD5 [" + str + "] in file [" + path + "]");
     }
 
     String name = null;
@@ -129,15 +129,15 @@ public final class MD5 {
         }
 
         if (index == str.length()) {
-          throw new MD5Exception("Invalid md5sum [" + str + "]");
+          throw new MD5Exception("Invalid MD5 [" + str + "] in file [" + path + "]");
         }
 
         name = str.substring(index);
       } else {
-        throw new MD5Exception("Invalid md5sum [" + str + "]");
+        throw new MD5Exception("Invalid MD5 [" + str + "] in file [" + path + "]");
       }
     } else {
-      throw new MD5Exception("Invalid md5sum [" + str + "]. It has a length of [" + str.length() + "] and it should be 32");
+      throw new MD5Exception("Invalid MD5 [" + str + "] in file [" + path + "]. It has a length of [" + str.length() + "] and it should be 32");
     }
 
     return new MD5(sum, StringTools.fromHex(sum), name);

@@ -15,6 +15,7 @@
  */
 package org.savantbuild.lang;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -24,18 +25,33 @@ import java.io.InputStream;
  * @author Brian Pontarelli
  */
 public class RuntimeTools {
-  public static boolean exec(String... command) throws IOException, InterruptedException {
+  public static ProcessResult exec(String... command) throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.redirectErrorStream(true);
 
     Process process = builder.start();
     InputStream is = process.getInputStream();
     byte[] buf = new byte[1024];
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
     int length;
     while ((length = is.read(buf)) != -1) {
-      System.out.println(new String(buf, 0, length, "UTF-8"));
+      baos.write(buf, 0, length);
     }
 
-    return process.waitFor() == 0;
+    return new ProcessResult(process.waitFor(), baos.toString("UTF-8"));
+  }
+
+  /**
+   * The result from a process, including the exit code and output.
+   */
+  public static class ProcessResult {
+    public final int exitCode;
+
+    public final String output;
+
+    public ProcessResult(int exitCode, String output) {
+      this.exitCode = exitCode;
+      this.output = output;
+    }
   }
 }
