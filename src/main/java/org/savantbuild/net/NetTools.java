@@ -15,10 +15,6 @@
  */
 package org.savantbuild.net;
 
-import org.savantbuild.io.IOTools;
-import org.savantbuild.security.MD5;
-import org.savantbuild.security.MD5Exception;
-
 import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +28,10 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Base64;
+
+import org.savantbuild.io.IOTools;
+import org.savantbuild.security.MD5;
+import org.savantbuild.security.MD5Exception;
 
 /**
  * This class provides toolkit methods for helping work with URLs and URIs and other network classes.
@@ -108,6 +108,8 @@ public class NetTools {
       huc.setHostnameVerifier((s, sslSession) -> true);
     }
 
+    uc.setConnectTimeout(1000);
+    uc.setReadTimeout(1000);
     uc.setDoInput(true);
     uc.setDoOutput(false);
     uc.connect();

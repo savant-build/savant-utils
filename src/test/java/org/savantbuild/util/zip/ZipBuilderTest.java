@@ -13,15 +13,15 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package org.savantbuild.util.jar;
+package org.savantbuild.util.zip;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import org.savantbuild.BaseUnitTest;
 import org.savantbuild.io.FileSet;
@@ -35,24 +35,24 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 /**
- * Tests the JarBuilder.
+ * Tests the ZipBuilder.
  *
  * @author Brian Pontarelli
  */
-public class JarBuilderTest extends BaseUnitTest {
-  private static void assertJarContains(JarFile jarFile, String... entries) {
-    stream(entries).forEach((entry) -> assertNotNull(jarFile.getEntry(entry), "Jar [" + jarFile + "] is missing entry [" + entry + "]"));
+public class ZipBuilderTest extends BaseUnitTest {
+  private static void assertZipContains(ZipFile zipFile, String... entries) {
+    stream(entries).forEach((entry) -> assertNotNull(zipFile.getEntry(entry), "Zip [" + zipFile + "] is missing entry [" + entry + "]"));
   }
 
-  private static void assertJarFileEquals(Path jarFile, String entry, Path original) throws IOException {
-    JarInputStream jis = new JarInputStream(Files.newInputStream(jarFile));
-    JarEntry jarEntry = jis.getNextJarEntry();
-    while (jarEntry != null && !jarEntry.getName().equals(entry)) {
-      jarEntry = jis.getNextJarEntry();
+  private static void assertZipFileEquals(Path zipFile, String entry, Path original) throws IOException {
+    ZipInputStream jis = new ZipInputStream(Files.newInputStream(zipFile));
+    ZipEntry zipEntry = jis.getNextEntry();
+    while (zipEntry != null && !zipEntry.getName().equals(entry)) {
+      zipEntry = jis.getNextEntry();
     }
 
-    if (jarEntry == null) {
-      fail("Jar [" + jarFile + "] is missing entry [" + entry + "]");
+    if (zipEntry == null) {
+      fail("Zip [" + zipFile + "] is missing entry [" + entry + "]");
     }
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -63,33 +63,33 @@ public class JarBuilderTest extends BaseUnitTest {
     }
 
     assertEquals(Files.readAllBytes(original), baos.toByteArray());
-    assertEquals(jarEntry.getSize(), Files.size(original));
-    assertEquals(jarEntry.getCreationTime(), Files.getAttribute(original, "creationTime"));
+    assertEquals(zipEntry.getSize(), Files.size(original));
+    assertEquals(zipEntry.getCreationTime(), Files.getAttribute(original, "creationTime"));
   }
 
   @Test
   public void build() throws Exception {
-    FileTools.prune(projectDir.resolve("build/test/jars"));
+    FileTools.prune(projectDir.resolve("build/test/zips"));
 
-    Path file = projectDir.resolve("build/test/jars/test.jar");
-    JarBuilder builder = new JarBuilder(file);
+    Path file = projectDir.resolve("build/test/zips/test.zip");
+    ZipBuilder builder = new ZipBuilder(file);
     int count = builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
                        .fileSet(new FileSet(projectDir.resolve("src/test/java")))
                        .optionalFileSet(new FileSet(projectDir.resolve("doesNotExist")))
                        .build();
     assertTrue(Files.isReadable(file));
-    assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
+    assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
-    assertJarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
+    assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertEquals(count, 34);
   }
 
   @Test
   public void buildRequiredDirectoryFailure() throws Exception {
-    FileTools.prune(projectDir.resolve("build/test/jars"));
+    FileTools.prune(projectDir.resolve("build/test/zips"));
 
-    Path file = projectDir.resolve("build/test/jars/test.jar");
-    JarBuilder builder = new JarBuilder(file);
+    Path file = projectDir.resolve("build/test/zips/test.zip");
+    ZipBuilder builder = new ZipBuilder(file);
     try {
       builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
              .fileSet(new FileSet(projectDir.resolve("src/test/java")))
@@ -103,18 +103,18 @@ public class JarBuilderTest extends BaseUnitTest {
 
   @Test
   public void buildStrings() throws Exception {
-    FileTools.prune(projectDir.resolve("build/test/jars"));
+    FileTools.prune(projectDir.resolve("build/test/zips"));
 
-    Path file = projectDir.resolve("build/test/jars/test.jar");
-    JarBuilder builder = new JarBuilder(file.toString());
+    Path file = projectDir.resolve("build/test/zips/test.zip");
+    ZipBuilder builder = new ZipBuilder(file.toString());
     int count = builder.fileSet(projectDir.resolve("src/main/java").toString())
                        .fileSet(projectDir.resolve("src/test/java").toString())
                        .optionalFileSet("doesNotExist")
                        .build();
     assertTrue(Files.isReadable(file));
-    assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
+    assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
-    assertJarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
+    assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertEquals(count, 34);
   }
 }

@@ -55,7 +55,8 @@ public class FileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/util/CyclicException.java"),
         projectDir.resolve("src/main/java/org/savantbuild/util/Graph.java"),
         projectDir.resolve("src/main/java/org/savantbuild/util/HashGraph.java"),
-        projectDir.resolve("src/main/java/org/savantbuild/util/jar/JarBuilder.java")
+        projectDir.resolve("src/main/java/org/savantbuild/util/jar/JarBuilder.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipBuilder.java")
     ));
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
         Paths.get("org/savantbuild/io/ArchiveFileSet.java"),
@@ -76,13 +77,52 @@ public class FileSetTest extends BaseUnitTest {
         Paths.get("org/savantbuild/util/CyclicException.java"),
         Paths.get("org/savantbuild/util/Graph.java"),
         Paths.get("org/savantbuild/util/HashGraph.java"),
-        Paths.get("org/savantbuild/util/jar/JarBuilder.java")
+        Paths.get("org/savantbuild/util/jar/JarBuilder.java"),
+        Paths.get("org/savantbuild/util/zip/ZipBuilder.java")
+    ));
+  }
+
+  @Test
+  public void toFileInfosWithExcludePatterns() throws Exception {
+    FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"), null, asList(Pattern.compile(".*/io/.*")));
+    List<FileInfo> infos = fileSet.toFileInfos();
+    assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
+        projectDir.resolve("src/main/java/org/savantbuild/lang/Classpath.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/lang/RuntimeTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/lang/StringTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/net/NetTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/output/Ansi256Colors.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/output/Output.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/output/SystemOutOutput.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/security/MD5.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/security/MD5Exception.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/CyclicException.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/Graph.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/HashGraph.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/jar/JarBuilder.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipBuilder.java")
+    ));
+    assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
+        Paths.get("org/savantbuild/lang/Classpath.java"),
+        Paths.get("org/savantbuild/lang/RuntimeTools.java"),
+        Paths.get("org/savantbuild/lang/StringTools.java"),
+        Paths.get("org/savantbuild/net/NetTools.java"),
+        Paths.get("org/savantbuild/output/Ansi256Colors.java"),
+        Paths.get("org/savantbuild/output/Output.java"),
+        Paths.get("org/savantbuild/output/SystemOutOutput.java"),
+        Paths.get("org/savantbuild/security/MD5.java"),
+        Paths.get("org/savantbuild/security/MD5Exception.java"),
+        Paths.get("org/savantbuild/util/CyclicException.java"),
+        Paths.get("org/savantbuild/util/Graph.java"),
+        Paths.get("org/savantbuild/util/HashGraph.java"),
+        Paths.get("org/savantbuild/util/jar/JarBuilder.java"),
+        Paths.get("org/savantbuild/util/zip/ZipBuilder.java")
     ));
   }
 
   @Test
   public void toFileInfosWithIncludePatterns() throws Exception {
-    FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*")));
+    FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*")), null);
     List<FileInfo> infos = fileSet.toFileInfos();
     assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
         projectDir.resolve("src/main/java/org/savantbuild/io/ArchiveFileSet.java"),
@@ -97,6 +137,24 @@ public class FileSetTest extends BaseUnitTest {
         Paths.get("org/savantbuild/io/Copier.java"),
         Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileSet.java"),
+        Paths.get("org/savantbuild/io/FileTools.java"),
+        Paths.get("org/savantbuild/io/IOTools.java")
+    ));
+  }
+
+  @Test
+  public void toFileInfosWithIncludeAndExcludePatterns() throws Exception {
+    FileSet fileSet = new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*")), asList(Pattern.compile(".*FileSet\\.java")));
+    List<FileInfo> infos = fileSet.toFileInfos();
+    assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
+        projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/IOTools.java")
+    ));
+    assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
+        Paths.get("org/savantbuild/io/Copier.java"),
+        Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileTools.java"),
         Paths.get("org/savantbuild/io/IOTools.java")
     ));

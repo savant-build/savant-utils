@@ -42,14 +42,20 @@ public class FileSet {
 
   public final Set<Pattern> includePatterns = new HashSet<>();
 
+  public final Set<Pattern> excludePatterns = new HashSet<>();
+
   public FileSet(Path directory) {
-    this.directory = directory;
-    this.includePatterns.addAll(includePatterns);
+    this(directory, null, null);
   }
 
-  public FileSet(Path directory, Collection<Pattern> includePatterns) {
+  public FileSet(Path directory, Collection<Pattern> includePatterns, Collection<Pattern> excludePatterns) {
     this.directory = directory;
-    this.includePatterns.addAll(includePatterns);
+    if (includePatterns != null) {
+      this.includePatterns.addAll(includePatterns);
+    }
+    if (excludePatterns != null) {
+      this.excludePatterns.addAll(excludePatterns);
+    }
   }
 
   /**
@@ -80,16 +86,27 @@ public class FileSet {
   }
 
   private boolean includeFileInfo(FileInfo fileInfo) {
-    if (includePatterns.isEmpty()) {
+    if (includePatterns.isEmpty() && excludePatterns.isEmpty()) {
       return true;
     }
 
+    boolean keep = includePatterns.isEmpty();
     for (Pattern includePattern : includePatterns) {
       if (includePattern.asPredicate().test(fileInfo.relative.toString())) {
-        return true;
+        keep = true;
+        break;
       }
     }
 
-    return false;
+    if (keep) {
+      for (Pattern excludePattern : excludePatterns) {
+        if (excludePattern.asPredicate().test(fileInfo.relative.toString())) {
+          keep = false;
+          break;
+        }
+      }
+    }
+
+    return keep;
   }
 }

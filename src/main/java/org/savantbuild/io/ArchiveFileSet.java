@@ -18,7 +18,9 @@ package org.savantbuild.io;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * A FileSet for archives. This allows the files in the FileSet to optionally contain a prefix.
@@ -29,15 +31,30 @@ public class ArchiveFileSet extends FileSet {
   public String prefix;
 
   /**
-   * Constructs a new ArchiveFileSet. The directory is required but the prefix is optional. Leaving the prefix blank will
-   * cause all of the files in the FileSet to contain relative paths based on the FileSet's directory. Using the prefix
-   * will cause the files in the FileSet to be relative to the prefix plus the directory.
+   * Constructs a new ArchiveFileSet. The directory is required but the prefix is optional. Leaving the prefix blank
+   * will cause all of the files in the FileSet to contain relative paths based on the FileSet's directory. Using the
+   * prefix will cause the files in the FileSet to be relative to the prefix plus the directory.
    *
    * @param directory The directory of the FileSet.
-   * @param prefix The prefix used to calculate the relative paths in the FileInfo objects.
+   * @param prefix    The prefix used to calculate the relative paths in the FileInfo objects.
    */
   public ArchiveFileSet(Path directory, String prefix) {
     super(directory);
+    this.prefix = prefix;
+  }
+
+  /**
+   * Constructs a new ArchiveFileSet. The directory is required but the prefix is optional. Leaving the prefix blank
+   * will cause all of the files in the FileSet to contain relative paths based on the FileSet's directory. Using the
+   * prefix will cause the files in the FileSet to be relative to the prefix plus the directory.
+   *
+   * @param directory The directory of the FileSet.
+   * @param prefix    The prefix used to calculate the relative paths in the FileInfo objects.
+   * @param includePatterns A list of regular expression Pattern objects that list the files to include.
+   * @param excludePatterns A list of regular expression Pattern objects that list the files to exclude.
+   */
+  public ArchiveFileSet(Path directory, String prefix, Collection<Pattern> includePatterns, Collection<Pattern> excludePatterns) {
+    super(directory, includePatterns, excludePatterns);
     this.prefix = prefix;
   }
 

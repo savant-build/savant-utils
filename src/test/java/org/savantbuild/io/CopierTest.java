@@ -53,7 +53,7 @@ public class CopierTest extends BaseUnitTest {
     FileTools.prune(toDir);
 
     Copier copier = new Copier(projectDir.resolve("build/test/copy"));
-    copier.fileSet(new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*"))))
+    copier.fileSet(new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*")), null))
         .copy();
 
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/Copier.java")));
