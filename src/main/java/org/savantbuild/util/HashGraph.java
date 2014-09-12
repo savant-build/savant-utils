@@ -16,8 +16,8 @@
 package org.savantbuild.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,7 @@ import static java.util.Arrays.asList;
  * @author Brian Pontarelli
  */
 public class HashGraph<T, U> implements Graph<T, U> {
-  private final Map<T, HashNode<T, U>> nodes = new HashMap<>();
+  private final Map<T, HashNode<T, U>> nodes = new LinkedHashMap<>();
 
   @Override
   public void addEdge(T origin, T destination, U value) {
@@ -265,7 +265,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
     return new HashSet<>(nodes.keySet());
   }
 
-  private HashNode<T, U> addNode(T value) {
+  protected HashNode<T, U> addNode(T value) {
     HashNode<T, U> node = nodes.get(value);
     if (node == null) {
       node = new HashNode<>(value);
@@ -277,7 +277,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
     return node;
   }
 
-  private void clearEdges(HashNode<T, U> node) {
+  protected void clearEdges(HashNode<T, U> node) {
     // Prevent concurrent modification exceptions by using a new ArrayList
     new ArrayList<>(node.outbound).forEach((edge) -> removeEdge(edge.origin.value, edge.destination.value, edge.value));
     node.outbound.clear();
@@ -287,7 +287,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
     node.inbound.clear();
   }
 
-  private T find(HashNode<T, U> root, Set<T> visited, Predicate<T> predicate) {
+  protected T find(HashNode<T, U> root, Set<T> visited, Predicate<T> predicate) {
     if (predicate.test(root.value)) {
       return root.value;
     }
@@ -308,7 +308,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
     return null;
   }
 
-  private void traverse(HashNode<T, U> root, boolean visitNodesOnce, Set<T> cycleCheck, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
+  protected void traverse(HashNode<T, U> root, boolean visitNodesOnce, Set<T> cycleCheck, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
     root.outbound.forEach((edge) -> {
       if (cycleCheck.contains(edge.destination.value)) {
         throw new CyclicException("Encountered the graph node [" + edge.destination.value + "] twice. Your graph has a cycle");
@@ -331,7 +331,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
     });
   }
 
-  private void traverseUp(HashNode<T, U> root, Set<T> visited, GraphVisitor<T, U> consumer, int depth) {
+  protected void traverseUp(HashNode<T, U> root, Set<T> visited, GraphVisitor<T, U> consumer, int depth) {
     root.outbound.forEach((edge) -> {
       if (visited.contains(edge.destination.value)) {
         throw new CyclicException("Encountered the graph node [" + edge.destination.value + "] twice. Your graph has a cycle");
@@ -349,7 +349,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
    *
    * @author Brian Pontarelli
    */
-  private static class HashEdge<T, U> {
+  protected static class HashEdge<T, U> {
     public final HashNode<T, U> destination;
 
     public final HashNode<T, U> origin;
@@ -393,7 +393,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
    *
    * @author Brian Pontarelli
    */
-  private static class HashNode<T, U> {
+  protected static class HashNode<T, U> {
     public final List<HashEdge<T, U>> inbound = new ArrayList<>();
 
     public final List<HashEdge<T, U>> outbound = new ArrayList<>();

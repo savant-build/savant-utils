@@ -24,8 +24,12 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,24 +41,6 @@ import java.util.stream.Stream;
  * @author Brian Pontarelli
  */
 public class FileTools {
-  /**
-   * Converts the object to a Path.
-   *
-   * @param object The object.
-   * @return The object as a path.
-   */
-  public static Path toPath(Object object) {
-    if (object == null) {
-      return null;
-    }
-
-    if (object instanceof Path) {
-      return (Path) object;
-    }
-
-    return Paths.get(object.toString());
-  }
-
   /**
    * Creates a temporary file.
    *
@@ -74,17 +60,6 @@ public class FileTools {
   }
 
   /**
-   * Returns a Function that maps a source path to a target path by changing the extension of the Path.
-   *
-   * @param original The original extension.
-   * @param target The target extension.
-   * @return The Function.
-   */
-  public static Function<Path, Path> extensionMapper(String original, String target) {
-    return (path) -> Paths.get(path.toString().replace(original, target));
-  }
-
-  /**
    * Returns a Predicate that returns true if the Path has the given extension.
    *
    * @param extension The extension.
@@ -92,6 +67,17 @@ public class FileTools {
    */
   public static Predicate<Path> extensionFilter(String extension) {
     return (path) -> path.toString().endsWith(extension);
+  }
+
+  /**
+   * Returns a Function that maps a source path to a target path by changing the extension of the Path.
+   *
+   * @param original The original extension.
+   * @param target   The target extension.
+   * @return The Function.
+   */
+  public static Function<Path, Path> extensionMapper(String original, String target) {
+    return (path) -> Paths.get(path.toString().replace(original, target));
   }
 
   /**
@@ -156,6 +142,128 @@ public class FileTools {
   }
 
   /**
+   * Converts the file permissions of this FileInfo to a POSIX bit mapped mode. The bit map looks like this:
+   * <p>
+   * <pre>
+   *   1_000_000_001_000_000
+   * </pre>
+   * <p>
+   * The first bit is always set. The next three bits are the set UID bits, the next 3 bits are the set GID bits. The
+   * next three bits are the owner permissions (read, write, execute), then the group permissions and finally the user
+   * permissions.
+   *
+   * @param permissions The POSIX file permissions.
+   * @return The POSIX mode bit map as an integer.
+   */
+  public static int toMode(Collection<PosixFilePermission> permissions) {
+    if (permissions == null || permissions.isEmpty()) {
+      return 0b1_000_000_110_100_100;
+    }
+
+    int mode = 0b1_000_000_000_000_000;
+    for (PosixFilePermission permission : permissions) {
+      switch (permission) {
+        case GROUP_EXECUTE:
+          mode |= 0b001_000;
+          break;
+        case GROUP_READ:
+          mode |= 0b100_000;
+          break;
+        case GROUP_WRITE:
+          mode |= 0b010_000;
+          break;
+        case OTHERS_EXECUTE:
+          mode |= 0b001;
+          break;
+        case OTHERS_READ:
+          mode |= 0b100;
+          break;
+        case OTHERS_WRITE:
+          mode |= 0b010;
+          break;
+        case OWNER_EXECUTE:
+          mode |= 0b001_000_000;
+          break;
+        case OWNER_READ:
+          mode |= 0b100_000_000;
+          break;
+        case OWNER_WRITE:
+          mode |= 0b010_000_000;
+          break;
+      }
+    }
+
+    return mode;
+  }
+
+  /**
+   * Converts the POSIX bit mapped file mode integer to a set of PosixFilePermissions. The bit map looks like this:
+   * <p>
+   * <pre>
+   *   1_000_000_001_000_000
+   * </pre>
+   * <p>
+   * The first bit is always set. The next three bits are the set UID bits, the next 3 bits are the set GID bits. The
+   * next three bits are the owner permissions (read, write, execute), then the group permissions and finally the user
+   * permissions.
+   *
+   * @param mode The POSIX bit mapped permissions.
+   * @return The POSIX mode bit map as an integer.
+   */
+  public static Set<PosixFilePermission> toPosixPermissions(int mode) {
+    Set<PosixFilePermission> permissions = new HashSet<>();
+    if ((mode & 0b001_000) == 0b001_000) {
+      permissions.add(PosixFilePermission.GROUP_EXECUTE);
+    }
+    if ((mode & 0b100_000) == 0b100_000) {
+      permissions.add(PosixFilePermission.GROUP_READ);
+    }
+    if ((mode & 0b010_000) == 0b010_000) {
+      permissions.add(PosixFilePermission.GROUP_WRITE);
+    }
+
+    if ((mode & 0b001) == 0b001) {
+      permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+    }
+    if ((mode & 0b100) == 0b100) {
+      permissions.add(PosixFilePermission.OTHERS_READ);
+    }
+    if ((mode & 0b010) == 0b010) {
+      permissions.add(PosixFilePermission.OTHERS_WRITE);
+    }
+
+    if ((mode & 0b001_000_000) == 0b001_000_000) {
+      permissions.add(PosixFilePermission.OWNER_EXECUTE);
+    }
+    if ((mode & 0b100_000_000) == 0b100_000_000) {
+      permissions.add(PosixFilePermission.OWNER_READ);
+    }
+    if ((mode & 0b010_000_000) == 0b010_000_000) {
+      permissions.add(PosixFilePermission.OWNER_WRITE);
+    }
+
+    return permissions;
+  }
+
+  /**
+   * Converts the object to a Path.
+   *
+   * @param object The object.
+   * @return The object as a path.
+   */
+  public static Path toPath(Object object) {
+    if (object == null) {
+      return null;
+    }
+
+    if (object instanceof Path) {
+      return (Path) object;
+    }
+
+    return Paths.get(object.toString());
+  }
+
+  /**
    * Updates the last modified timestamp of each of the given Paths. This effectively "touches" each Path.
    *
    * @param paths The Paths to touch.
@@ -182,4 +290,5 @@ public class FileTools {
       throw new IllegalStateException(e);
     }
   }
+
 }

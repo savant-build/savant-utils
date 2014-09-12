@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,6 +74,8 @@ public class FileSet {
         Path relativePath = file.subpath(directory.getNameCount(), file.getNameCount());
         FileInfo info = new FileInfo(file, relativePath);
         info.creationTime = (FileTime) Files.getAttribute(file, "creationTime");
+        info.groupName = Files.readAttributes(file, PosixFileAttributes.class).group().getName();
+        info.userName = Files.getOwner(file).getName();
         info.lastAccessTime = (FileTime) Files.getAttribute(file, "lastAccessTime");
         info.lastModifiedTime = Files.getLastModifiedTime(file);
         info.size = (Long) Files.getAttribute(file, "size");

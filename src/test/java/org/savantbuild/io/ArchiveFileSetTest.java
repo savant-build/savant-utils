@@ -55,7 +55,10 @@ public class ArchiveFileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/util/Graph.java"),
         projectDir.resolve("src/main/java/org/savantbuild/util/HashGraph.java"),
         projectDir.resolve("src/main/java/org/savantbuild/util/jar/JarBuilder.java"),
-        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipBuilder.java")
+        projectDir.resolve("src/main/java/org/savantbuild/util/tar/TarBuilder.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/tar/TarTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipBuilder.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipTools.java")
     ));
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
         Paths.get("org/savantbuild/io/ArchiveFileSet.java"),
@@ -77,7 +80,10 @@ public class ArchiveFileSetTest extends BaseUnitTest {
         Paths.get("org/savantbuild/util/Graph.java"),
         Paths.get("org/savantbuild/util/HashGraph.java"),
         Paths.get("org/savantbuild/util/jar/JarBuilder.java"),
-        Paths.get("org/savantbuild/util/zip/ZipBuilder.java")
+        Paths.get("org/savantbuild/util/tar/TarBuilder.java"),
+        Paths.get("org/savantbuild/util/tar/TarTools.java"),
+        Paths.get("org/savantbuild/util/zip/ZipBuilder.java"),
+        Paths.get("org/savantbuild/util/zip/ZipTools.java")
     ));
   }
 
@@ -105,7 +111,10 @@ public class ArchiveFileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/util/Graph.java"),
         projectDir.resolve("src/main/java/org/savantbuild/util/HashGraph.java"),
         projectDir.resolve("src/main/java/org/savantbuild/util/jar/JarBuilder.java"),
-        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipBuilder.java")
+        projectDir.resolve("src/main/java/org/savantbuild/util/tar/TarBuilder.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/tar/TarTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipBuilder.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/util/zip/ZipTools.java")
     ));
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
         Paths.get("some-directory-1.0/org/savantbuild/io/ArchiveFileSet.java"),
@@ -127,7 +136,10 @@ public class ArchiveFileSetTest extends BaseUnitTest {
         Paths.get("some-directory-1.0/org/savantbuild/util/Graph.java"),
         Paths.get("some-directory-1.0/org/savantbuild/util/HashGraph.java"),
         Paths.get("some-directory-1.0/org/savantbuild/util/jar/JarBuilder.java"),
-        Paths.get("some-directory-1.0/org/savantbuild/util/zip/ZipBuilder.java")
+        Paths.get("some-directory-1.0/org/savantbuild/util/tar/TarBuilder.java"),
+        Paths.get("some-directory-1.0/org/savantbuild/util/tar/TarTools.java"),
+        Paths.get("some-directory-1.0/org/savantbuild/util/zip/ZipBuilder.java"),
+        Paths.get("some-directory-1.0/org/savantbuild/util/zip/ZipTools.java")
     ));
   }
 }

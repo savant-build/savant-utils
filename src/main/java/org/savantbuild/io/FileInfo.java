@@ -30,6 +30,8 @@ import java.util.Set;
 public class FileInfo {
   public FileTime creationTime;
 
+  public String groupName;
+
   public FileTime lastAccessTime;
 
   public FileTime lastModifiedTime;
@@ -42,10 +44,7 @@ public class FileInfo {
 
   public Long size;
 
-  public FileInfo(Path origin, Path relative) {
-    this.origin = origin;
-    this.relative = relative;
-  }
+  public String userName;
 
   @Override
   public boolean equals(Object o) {
@@ -54,27 +53,39 @@ public class FileInfo {
 
     final FileInfo fileInfo = (FileInfo) o;
 
-    if (!creationTime.equals(fileInfo.creationTime)) return false;
-    if (!lastAccessTime.equals(fileInfo.lastAccessTime)) return false;
-    if (!lastModifiedTime.equals(fileInfo.lastModifiedTime)) return false;
-    if (!origin.equals(fileInfo.origin)) return false;
+    if (creationTime != null ? !creationTime.equals(fileInfo.creationTime) : fileInfo.creationTime != null)
+      return false;
+    if (groupName != null ? !groupName.equals(fileInfo.groupName) : fileInfo.groupName != null) return false;
+    if (lastAccessTime != null ? !lastAccessTime.equals(fileInfo.lastAccessTime) : fileInfo.lastAccessTime != null)
+      return false;
+    if (lastModifiedTime != null ? !lastModifiedTime.equals(fileInfo.lastModifiedTime) : fileInfo.lastModifiedTime != null)
+      return false;
+    if (origin != null ? !origin.equals(fileInfo.origin) : fileInfo.origin != null) return false;
     if (permissions != null ? !permissions.equals(fileInfo.permissions) : fileInfo.permissions != null) return false;
-    if (!relative.equals(fileInfo.relative)) return false;
-    if (!size.equals(fileInfo.size)) return false;
+    if (relative != null ? !relative.equals(fileInfo.relative) : fileInfo.relative != null) return false;
+    if (size != null ? !size.equals(fileInfo.size) : fileInfo.size != null) return false;
+    if (userName != null ? !userName.equals(fileInfo.userName) : fileInfo.userName != null) return false;
 
     return true;
   }
 
   @Override
   public int hashCode() {
-    int result = creationTime.hashCode();
-    result = 31 * result + lastAccessTime.hashCode();
-    result = 31 * result + lastModifiedTime.hashCode();
-    result = 31 * result + origin.hashCode();
+    int result = creationTime != null ? creationTime.hashCode() : 0;
+    result = 31 * result + (groupName != null ? groupName.hashCode() : 0);
+    result = 31 * result + (lastAccessTime != null ? lastAccessTime.hashCode() : 0);
+    result = 31 * result + (lastModifiedTime != null ? lastModifiedTime.hashCode() : 0);
+    result = 31 * result + (origin != null ? origin.hashCode() : 0);
     result = 31 * result + (permissions != null ? permissions.hashCode() : 0);
-    result = 31 * result + relative.hashCode();
-    result = 31 * result + size.hashCode();
+    result = 31 * result + (relative != null ? relative.hashCode() : 0);
+    result = 31 * result + (size != null ? size.hashCode() : 0);
+    result = 31 * result + (userName != null ? userName.hashCode() : 0);
     return result;
+  }
+
+  public FileInfo(Path origin, Path relative) {
+    this.origin = origin;
+    this.relative = relative;
   }
 
   /**
@@ -91,43 +102,6 @@ public class FileInfo {
    * @return The POSIX mode bit map as an integer.
    */
   public int toMode() {
-    if (permissions == null || permissions.isEmpty()) {
-      return 0b1_000_000_110_100_100;
-    }
-
-    int mode = 0b1_000_000_000_000_000;
-    for (PosixFilePermission permission : permissions) {
-      switch (permission) {
-        case GROUP_EXECUTE:
-          mode |= 0b001_000;
-          break;
-        case GROUP_READ:
-          mode |= 0b100_000;
-          break;
-        case GROUP_WRITE:
-          mode |= 0b010_000;
-          break;
-        case OTHERS_EXECUTE:
-          mode |= 0b001;
-          break;
-        case OTHERS_READ:
-          mode |= 0b100;
-          break;
-        case OTHERS_WRITE:
-          mode |= 0b010;
-          break;
-        case OWNER_EXECUTE:
-          mode |= 0b001_000_000;
-          break;
-        case OWNER_READ:
-          mode |= 0b100_000_000;
-          break;
-        case OWNER_WRITE:
-          mode |= 0b010_000_000;
-          break;
-      }
-    }
-
-    return mode;
+    return FileTools.toMode(permissions);
   }
 }

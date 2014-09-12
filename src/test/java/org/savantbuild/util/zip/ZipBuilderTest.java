@@ -81,7 +81,7 @@ public class ZipBuilderTest extends BaseUnitTest {
     assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 34);
+    assertEquals(count, 40);
   }
 
   @Test
@@ -115,6 +115,6 @@ public class ZipBuilderTest extends BaseUnitTest {
     assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 34);
+    assertEquals(count, 40);
   }
 }
