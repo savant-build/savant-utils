@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,7 +51,6 @@ public class JarBuilder {
 
   public JarBuilder(Path file) {
     this.file = file;
-    this.manifest.getMainAttributes().put(Name.MANIFEST_VERSION, "1.0");
   }
 
   public int build() throws IOException {
@@ -84,6 +82,7 @@ public class JarBuilder {
   }
 
   public JarBuilder ensureManifest(String vendor, String version) {
+    manifest.getMainAttributes().putIfAbsent(Name.MANIFEST_VERSION, "1.0");
     manifest.getMainAttributes().putIfAbsent(Name.IMPLEMENTATION_VENDOR, vendor);
     manifest.getMainAttributes().putIfAbsent(Name.IMPLEMENTATION_VERSION, version);
     manifest.getMainAttributes().putIfAbsent(Name.SPECIFICATION_VENDOR, vendor);
@@ -113,7 +112,6 @@ public class JarBuilder {
   }
 
   public JarBuilder manifest(Path file) throws IOException {
-    System.out.println("File method");
     try (InputStream is = Files.newInputStream(file)) {
       manifest.read(is);
     }
@@ -121,7 +119,6 @@ public class JarBuilder {
   }
 
   public JarBuilder manifest(Map<String, Object> map) {
-    System.out.println("Map method " + new HashMap<>(manifest.getMainAttributes()) + " " + map);
     Attributes attributes = manifest.getMainAttributes();
     map.forEach((key, value) -> attributes.put(new Attributes.Name(key), value.toString()));
     return this;
