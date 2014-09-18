@@ -20,9 +20,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.Set;
+
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipFile;
+import org.savantbuild.io.FileTools;
 
 /**
  * Collection of ZIP file tools.
@@ -42,38 +46,45 @@ public class ZipTools {
       Files.createDirectories(to);
     }
 
-    try (ZipFile zipFile = new ZipFile(file.toFile())) {
-      Enumeration<? extends ZipEntry> entries = zipFile.entries();
-      while (entries.hasMoreElements()) {
-        ZipEntry entry = entries.nextElement();
-        Path entryPath = to.resolve(entry.getName());
-        if (!entry.isDirectory()) {
-          if (Files.notExists(entryPath.getParent())) {
-            Files.createDirectories(entryPath.getParent());
+    ZipFile zipFile = new ZipFile(file.toFile());
+    Enumeration<ZipEntry> entries = zipFile.getEntries();
+    while (entries.hasMoreElements()) {
+      ZipEntry entry = entries.nextElement();
+      Path entryPath = to.resolve(entry.getName());
+      if (!entry.isDirectory()) {
+        if (Files.notExists(entryPath.getParent())) {
+          Files.createDirectories(entryPath.getParent());
+        }
+
+        if (Files.isRegularFile(entryPath)) {
+          if (Files.size(entryPath) == entry.getSize()) {
+            continue;
+          } else {
+            Files.delete(entryPath);
           }
+        }
 
-          if (Files.isRegularFile(entryPath)) {
-            if (Files.size(entryPath) == entry.getSize()) {
-              continue;
-            } else {
-              Files.delete(entryPath);
-            }
-          }
+        Files.createFile(entryPath);
 
-          Files.createFile(entryPath);
-
-          try (OutputStream os = Files.newOutputStream(entryPath)) {
-            InputStream is = zipFile.getInputStream(entry);
-            byte[] ba = new byte[1024];
-            int read;
-            while ((read = is.read(ba)) != -1) {
-              if (read > 0) {
-                os.write(ba, 0, read);
-              }
+        try (OutputStream os = Files.newOutputStream(entryPath)) {
+          InputStream is = zipFile.getInputStream(entry);
+          byte[] ba = new byte[1024];
+          int read;
+          while ((read = is.read(ba)) != -1) {
+            if (read > 0) {
+              os.write(ba, 0, read);
             }
           }
         }
+
+        int unixMode = entry.getUnixMode();
+        if (unixMode != 0) {
+          Set<PosixFilePermission> permissions = FileTools.toPosixPermissions(unixMode);
+          Files.setPosixFilePermissions(entryPath, permissions);
+        }
       }
     }
+
+    zipFile.close();
   }
 }

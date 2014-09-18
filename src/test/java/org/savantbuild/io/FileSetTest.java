@@ -44,6 +44,7 @@ public class FileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/Filter.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/IOTools.java"),
         projectDir.resolve("src/main/java/org/savantbuild/lang/Classpath.java"),
         projectDir.resolve("src/main/java/org/savantbuild/lang/RuntimeTools.java"),
@@ -70,6 +71,7 @@ public class FileSetTest extends BaseUnitTest {
         Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileSet.java"),
         Paths.get("org/savantbuild/io/FileTools.java"),
+        Paths.get("org/savantbuild/io/Filter.java"),
         Paths.get("org/savantbuild/io/IOTools.java"),
         Paths.get("org/savantbuild/lang/Classpath.java"),
         Paths.get("org/savantbuild/lang/RuntimeTools.java"),
@@ -148,6 +150,7 @@ public class FileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/Filter.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/IOTools.java")
     ));
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
@@ -156,6 +159,7 @@ public class FileSetTest extends BaseUnitTest {
         Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileSet.java"),
         Paths.get("org/savantbuild/io/FileTools.java"),
+        Paths.get("org/savantbuild/io/Filter.java"),
         Paths.get("org/savantbuild/io/IOTools.java")
     ));
   }
@@ -168,12 +172,14 @@ public class FileSetTest extends BaseUnitTest {
         projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/Filter.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/IOTools.java")
     ));
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
         Paths.get("org/savantbuild/io/Copier.java"),
         Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileTools.java"),
+        Paths.get("org/savantbuild/io/Filter.java"),
         Paths.get("org/savantbuild/io/IOTools.java")
     ));
   }

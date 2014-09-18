@@ -23,6 +23,7 @@ import org.savantbuild.BaseUnitTest;
 import org.testng.annotations.Test;
 
 import static java.util.Arrays.asList;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -48,13 +49,33 @@ public class CopierTest extends BaseUnitTest {
   }
 
   @Test
+  public void copyFilters() throws Exception {
+    Path toDir = projectDir.resolve("build/test/copy");
+    FileTools.prune(toDir);
+
+    Copier copier = new Copier(projectDir.resolve("build/test/copy"));
+    copier.fileSet(new FileSet(projectDir.resolve("src/test/java"), asList(Pattern.compile(".*/io/.*")), null))
+          .filter("%TOKEN1%", "token1")
+          .filter("%TOKEN4%", "token4")
+          .copy();
+
+    assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/CopierTest.java")));
+    assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/FileToolsTest.java")));
+    assertFalse(Files.isRegularFile(toDir.resolve("org/savantbuild/lang/ClasspathTest.java")));
+
+    assertEquals(new String(Files.readAllBytes(toDir.resolve("org/savantbuild/io/TestFilterFile.txt"))),
+        "This file contains token1 and %TOKEN2%\n" +
+            "It should be replaced with %TOKEN3% and token4");
+  }
+
+  @Test
   public void copyIncludePatterns() throws Exception {
     Path toDir = projectDir.resolve("build/test/copy");
     FileTools.prune(toDir);
 
     Copier copier = new Copier(projectDir.resolve("build/test/copy"));
     copier.fileSet(new FileSet(projectDir.resolve("src/main/java"), asList(Pattern.compile(".*/io/.*")), null))
-        .copy();
+          .copy();
 
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/Copier.java")));
     assertTrue(Files.isRegularFile(toDir.resolve("org/savantbuild/io/FileTools.java")));

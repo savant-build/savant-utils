@@ -16,11 +16,33 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="jar://$USER_HOME$/.savant/cache/org/apache/ant/ant/1.9.4/ant-1.9.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.savant/cache/org/apache/ant/ant/1.9.4/ant-1.9.4-src.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="jar://$USER_HOME$/.savant/cache/org/apache/commons/commons-compress/1.7.0/commons-compress-1.7.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
           <root url="jar://$USER_HOME$/.savant/cache/org/apache/commons/commons-compress/1.7.0/commons-compress-1.7.0-src.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.savant/cache/org/apache/ant/ant-launcher/1.9.4/ant-launcher-1.9.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.savant/cache/org/apache/ant/ant-launcher/1.9.4/ant-launcher-1.9.4-src.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>

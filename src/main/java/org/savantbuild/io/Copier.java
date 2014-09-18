@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provides file copying utilities using relative or absolute paths. All relative paths are resolved using the
@@ -35,6 +34,8 @@ public class Copier {
 
   public List<FileSet> fileSets = new ArrayList<>();
 
+  public List<Filter> filters = new ArrayList<>();
+
   public Copier(Path to) {
     this.to = to;
   }
@@ -44,7 +45,7 @@ public class Copier {
   }
 
   public int copy() throws IOException {
-    AtomicInteger count = new AtomicInteger(0);
+    int count = 0;
     for (FileSet fileSet : fileSets) {
       // Skip missing source directories
       if (!Files.isDirectory(fileSet.directory)) {
@@ -54,12 +55,24 @@ public class Copier {
       for (FileInfo fileInfo : fileSet.toFileInfos()) {
         Path target = to.resolve(fileInfo.relative);
         Files.createDirectories(target.getParent());
-        Files.copy(fileInfo.origin, target, StandardCopyOption.REPLACE_EXISTING);
-        count.incrementAndGet();
+
+        if (filters.isEmpty()) {
+          Files.copy(fileInfo.origin, target, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+          // Bold assumption here. I'm assuming the files aren't large and that it will be simpler and faster to read them
+          // into memory, filter them, then write it out
+          String contents = new String(Files.readAllBytes(fileInfo.origin), "UTF-8");
+          for (Filter filter : filters) {
+            contents = contents.replace(filter.token, filter.value);
+          }
+          Files.write(target, contents.getBytes("UTF-8"));
+        }
+
+        count++;
       }
     }
 
-    return count.get();
+    return count;
   }
 
   public Copier fileSet(FileSet fileSet) throws IOException {
@@ -83,6 +96,20 @@ public class Copier {
     return fileSet(Paths.get(directory));
   }
 
+  public Copier filter(String token, String value) {
+    this.filters.add(new Filter(token, value));
+    return this;
+  }
+
+  public Copier filter(Filter filter) {
+    this.filters.add(filter);
+    return this;
+  }
+
+  public Copier optionalFileSet(String directory) throws IOException {
+    return optionalFileSet(Paths.get(directory));
+  }
+
   public Copier optionalFileSet(FileSet fileSet) throws IOException {
     if (Files.isRegularFile(fileSet.directory)) {
       throw new IOException("The [fileSet.directory] path [" + fileSet.directory + "] passed to the Copier cannot be a file");
@@ -98,9 +125,5 @@ public class Copier {
 
   public Copier optionalFileSet(Path directory) throws IOException {
     return optionalFileSet(new FileSet(directory));
-  }
-
-  public Copier optionalFileSet(String directory) throws IOException {
-    return optionalFileSet(Paths.get(directory));
   }
 }

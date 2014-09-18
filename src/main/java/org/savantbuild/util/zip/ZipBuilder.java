@@ -21,10 +21,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
+import org.apache.tools.zip.ZipEntry;
+import org.apache.tools.zip.ZipOutputStream;
 import org.savantbuild.io.FileInfo;
 import org.savantbuild.io.FileSet;
 
@@ -51,27 +50,27 @@ public class ZipBuilder {
       Files.createDirectories(file.getParent());
     }
 
-    AtomicInteger count = new AtomicInteger(0);
+    int count = 0;
 
-    try (ZipOutputStream jos = new ZipOutputStream(Files.newOutputStream(file))) {
+    try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(file))) {
       for (FileSet fileSet : fileSets) {
         for (FileInfo fileInfo : fileSet.toFileInfos()) {
           ZipEntry entry = new ZipEntry(fileInfo.relative.toString());
-          entry.setCreationTime(fileInfo.creationTime);
           entry.setLastAccessTime(fileInfo.lastAccessTime);
           entry.setLastModifiedTime(fileInfo.lastModifiedTime);
           entry.setTime(fileInfo.lastModifiedTime.toMillis());
           entry.setSize(fileInfo.size);
-          jos.putNextEntry(entry);
-          Files.copy(fileInfo.origin, jos);
-          jos.flush();
-          jos.closeEntry();
-          count.incrementAndGet();
+          entry.setUnixMode(fileInfo.toMode());
+          zos.putNextEntry(entry);
+          Files.copy(fileInfo.origin, zos);
+          zos.flush();
+          zos.closeEntry();
+          count++;
         }
       }
     }
 
-    return count.get();
+    return count;
   }
 
   public ZipBuilder fileSet(Path directory) throws IOException {

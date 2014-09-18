@@ -84,11 +84,11 @@ public class TarBuilderTest extends BaseUnitTest {
     assertTrue(Files.isReadable(file));
     assertTarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertTarFileEquals(file, "org/savantbuild/io/FileSet.java", projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"));
-    assertEquals(count, 41);
+    assertEquals(count, 43);
   }
 
   @Test
-  public void build_compress() throws Exception {
+  public void buildCompress() throws Exception {
     FileTools.prune(projectDir.resolve("build/test/tars"));
 
     Path file = projectDir.resolve("build/test/tars/test.tar.gz");
@@ -103,7 +103,7 @@ public class TarBuilderTest extends BaseUnitTest {
     assertTrue(Files.isReadable(file));
     assertTarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertTarFileEquals(file, "org/savantbuild/io/FileSet.java", projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"));
-    assertEquals(count, 41);
+    assertEquals(count, 43);
   }
 
   @Test
@@ -138,6 +138,6 @@ public class TarBuilderTest extends BaseUnitTest {
     assertTrue(Files.isReadable(file));
     assertTarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertTarFileEquals(file, "org/savantbuild/io/FileSet.java", projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"));
-    assertEquals(count, 41);
+    assertEquals(count, 43);
   }
 }

@@ -197,6 +197,22 @@ public class FileTools {
   }
 
   /**
+   * Converts a hex value to a POSIX mode. This allows you to use a hex lik 0x777 to represent rwx-rwx-rwx.
+   *
+   * @param hex The hex mode.
+   * @return The POSIX mode.
+   */
+  public static int toMode(int hex) {
+    int unixMode = 0b1_000_000_000_000_000;
+    unixMode += (hex & 0b111);
+    hex >>= 4; // Line up the next 3 bits
+    unixMode += ((hex & 0b111) << 3);
+    hex >>= 4; // Line up the final 3 bits
+    unixMode += ((hex & 0b111) << 6);
+    return unixMode;
+  }
+
+  /**
    * Converts the POSIX bit mapped file mode integer to a set of PosixFilePermissions. The bit map looks like this:
    * <p>
    * <pre>
