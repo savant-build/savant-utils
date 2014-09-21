@@ -26,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.savantbuild.BaseUnitTest;
+import org.savantbuild.io.Directory;
 import org.savantbuild.io.FileSet;
 import org.savantbuild.io.FileTools;
 import org.testng.annotations.Test;
@@ -69,22 +70,52 @@ public class TarBuilderTest extends BaseUnitTest {
     assertEquals(tarArchiveEntry.getGroupName(), Files.readAttributes(original, PosixFileAttributes.class).group().getName());
   }
 
+  private static void assertTarContainsDirectory(Path tarFile, String entry, Integer mode, String userName, String groupName) throws IOException {
+    InputStream is = Files.newInputStream(tarFile);
+    if (tarFile.toString().endsWith(".gz")) {
+      is = new GZIPInputStream(is);
+    }
+
+    TarArchiveInputStream tis = new TarArchiveInputStream(is);
+    TarArchiveEntry tarArchiveEntry = tis.getNextTarEntry();
+    while (tarArchiveEntry != null && !tarArchiveEntry.getName().equals(entry)) {
+      tarArchiveEntry = tis.getNextTarEntry();
+    }
+
+    if (tarArchiveEntry == null) {
+      fail("Tar [" + tarFile + "] is missing entry [" + entry + "]");
+    }
+
+    assertTrue(tarArchiveEntry.isDirectory());
+    if (mode != null) {
+      assertEquals(tarArchiveEntry.getMode(), FileTools.toMode(mode));
+    }
+    if (userName != null) {
+      assertEquals(tarArchiveEntry.getUserName(), userName);
+    }
+    if (groupName != null) {
+      assertEquals(tarArchiveEntry.getGroupName(), groupName);
+    }
+  }
+
   @Test
   public void build() throws Exception {
     FileTools.prune(projectDir.resolve("build/test/tars"));
 
     Path file = projectDir.resolve("build/test/tars/test.tar");
     TarBuilder builder = new TarBuilder(file);
-    builder.storeGroup = true;
-    builder.storeOwner = true;
+    builder.storeGroupName = true;
+    builder.storeUserName = true;
     int count = builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
                        .fileSet(new FileSet(projectDir.resolve("src/test/java")))
                        .optionalFileSet(new FileSet(projectDir.resolve("doesNotExist")))
+                       .directory(new Directory("test/directory", 0x755, "root", "root"))
                        .build();
     assertTrue(Files.isReadable(file));
     assertTarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertTarFileEquals(file, "org/savantbuild/io/FileSet.java", projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"));
-    assertEquals(count, 43);
+    assertTarContainsDirectory(file, "test/directory/", 0x755, "root", "root");
+    assertEquals(count, 45);
   }
 
   @Test
@@ -93,8 +124,8 @@ public class TarBuilderTest extends BaseUnitTest {
 
     Path file = projectDir.resolve("build/test/tars/test.tar.gz");
     TarBuilder builder = new TarBuilder(file);
-    builder.storeGroup = true;
-    builder.storeOwner = true;
+    builder.storeGroupName = true;
+    builder.storeUserName = true;
     builder.compress = true;
     int count = builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
                        .fileSet(new FileSet(projectDir.resolve("src/test/java")))
@@ -103,7 +134,7 @@ public class TarBuilderTest extends BaseUnitTest {
     assertTrue(Files.isReadable(file));
     assertTarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertTarFileEquals(file, "org/savantbuild/io/FileSet.java", projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"));
-    assertEquals(count, 43);
+    assertEquals(count, 44);
   }
 
   @Test
@@ -129,8 +160,8 @@ public class TarBuilderTest extends BaseUnitTest {
 
     Path file = projectDir.resolve("build/test/tars/test.tar.gz");
     TarBuilder builder = new TarBuilder(file.toString());
-    builder.storeGroup = true;
-    builder.storeOwner = true;
+    builder.storeGroupName = true;
+    builder.storeUserName = true;
     int count = builder.fileSet(projectDir.resolve("src/main/java").toString())
                        .fileSet(projectDir.resolve("src/test/java").toString())
                        .optionalFileSet("doesNotExist")
@@ -138,6 +169,6 @@ public class TarBuilderTest extends BaseUnitTest {
     assertTrue(Files.isReadable(file));
     assertTarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
     assertTarFileEquals(file, "org/savantbuild/io/FileSet.java", projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"));
-    assertEquals(count, 43);
+    assertEquals(count, 44);
   }
 }

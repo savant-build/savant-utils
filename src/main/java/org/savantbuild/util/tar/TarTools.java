@@ -62,7 +62,31 @@ public class TarTools {
       TarArchiveEntry entry;
       while ((entry = tis.getNextTarEntry()) != null) {
         Path entryPath = to.resolve(entry.getName());
-        if (!entry.isDirectory()) {
+        if (entry.isDirectory()) {
+          // Skip directory entries that don't add any value
+          if (entry.getMode() == 0 && entry.getGroupName() == null && entry.getUserName() == null) {
+            continue;
+          }
+
+          if (Files.notExists(entryPath)) {
+            Files.createDirectories(entryPath);
+          }
+
+          if (entry.getMode() != 0) {
+            Set<PosixFilePermission> permissions = FileTools.toPosixPermissions(entry.getMode());
+            Files.setPosixFilePermissions(entryPath, permissions);
+          }
+
+          if (useGroup && entry.getGroupName() != null && !entry.getGroupName().trim().isEmpty()) {
+            GroupPrincipal group = FileSystems.getDefault().getUserPrincipalLookupService().lookupPrincipalByGroupName(entry.getGroupName());
+            Files.getFileAttributeView(entryPath, PosixFileAttributeView.class).setGroup(group);
+          }
+
+          if (useOwner && entry.getUserName() != null && !entry.getUserName().trim().isEmpty()) {
+            UserPrincipal user = FileSystems.getDefault().getUserPrincipalLookupService().lookupPrincipalByName(entry.getUserName());
+            Files.getFileAttributeView(entryPath, PosixFileAttributeView.class).setOwner(user);
+          }
+        } else {
           if (Files.notExists(entryPath.getParent())) {
             Files.createDirectories(entryPath.getParent());
           }
@@ -87,8 +111,10 @@ public class TarTools {
             }
           }
 
-          Set<PosixFilePermission> permissions = FileTools.toPosixPermissions(entry.getMode());
-          Files.setPosixFilePermissions(entryPath, permissions);
+          if (entry.getMode() != 0) {
+            Set<PosixFilePermission> permissions = FileTools.toPosixPermissions(entry.getMode());
+            Files.setPosixFilePermissions(entryPath, permissions);
+          }
 
           if (useGroup && entry.getGroupName() != null && !entry.getGroupName().trim().isEmpty()) {
             GroupPrincipal group = FileSystems.getDefault().getUserPrincipalLookupService().lookupPrincipalByGroupName(entry.getGroupName());

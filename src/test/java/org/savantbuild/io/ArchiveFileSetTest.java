@@ -38,6 +38,7 @@ public class ArchiveFileSetTest extends BaseUnitTest {
     assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
         projectDir.resolve("src/main/java/org/savantbuild/io/ArchiveFileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/Directory.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
@@ -65,6 +66,7 @@ public class ArchiveFileSetTest extends BaseUnitTest {
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
         Paths.get("org/savantbuild/io/ArchiveFileSet.java"),
         Paths.get("org/savantbuild/io/Copier.java"),
+        Paths.get("org/savantbuild/io/Directory.java"),
         Paths.get("org/savantbuild/io/FileInfo.java"),
         Paths.get("org/savantbuild/io/FileSet.java"),
         Paths.get("org/savantbuild/io/FileTools.java"),
@@ -98,6 +100,7 @@ public class ArchiveFileSetTest extends BaseUnitTest {
     assertEquals(infos.stream().map((info) -> info.origin).collect(Collectors.toList()), asList(
         projectDir.resolve("src/main/java/org/savantbuild/io/ArchiveFileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"),
+        projectDir.resolve("src/main/java/org/savantbuild/io/Directory.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileInfo.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileSet.java"),
         projectDir.resolve("src/main/java/org/savantbuild/io/FileTools.java"),
@@ -125,6 +128,7 @@ public class ArchiveFileSetTest extends BaseUnitTest {
     assertEquals(infos.stream().map((info) -> info.relative).collect(Collectors.toList()), asList(
         Paths.get("some-directory-1.0/org/savantbuild/io/ArchiveFileSet.java"),
         Paths.get("some-directory-1.0/org/savantbuild/io/Copier.java"),
+        Paths.get("some-directory-1.0/org/savantbuild/io/Directory.java"),
         Paths.get("some-directory-1.0/org/savantbuild/io/FileInfo.java"),
         Paths.get("some-directory-1.0/org/savantbuild/io/FileSet.java"),
         Paths.get("some-directory-1.0/org/savantbuild/io/FileTools.java"),

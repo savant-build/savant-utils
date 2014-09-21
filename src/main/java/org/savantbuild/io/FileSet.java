@@ -45,10 +45,22 @@ public class FileSet {
 
   public final Set<Pattern> excludePatterns = new HashSet<>();
 
+  /**
+   * Constructs a new FileSet.
+   *
+   * @param directory       The directory of the FileSet.
+   */
   public FileSet(Path directory) {
     this(directory, null, null);
   }
 
+  /**
+   * Constructs a new FileSet. The directory is required but everything else is optional.
+   *
+   * @param directory       The directory of the FileSet.
+   * @param includePatterns (Optional) A list of regular expression Pattern objects that list the files to include.
+   * @param excludePatterns (Optional) A list of regular expression Pattern objects that list the files to exclude.
+   */
   public FileSet(Path directory, Collection<Pattern> includePatterns, Collection<Pattern> excludePatterns) {
     this.directory = directory;
     if (includePatterns != null) {

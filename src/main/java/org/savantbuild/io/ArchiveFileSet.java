@@ -28,9 +28,13 @@ import java.util.regex.Pattern;
  * @author Brian Pontarelli
  */
 public class ArchiveFileSet extends FileSet {
+  public String groupName;
+
   public Integer mode;
 
   public String prefix;
+
+  public String userName;
 
   /**
    * Constructs a new ArchiveFileSet. The directory is required but the prefix is optional. Leaving the prefix blank
@@ -51,29 +55,36 @@ public class ArchiveFileSet extends FileSet {
    * prefix will cause the files in the FileSet to be relative to the prefix plus the directory.
    *
    * @param directory       The directory of the FileSet.
-   * @param prefix          The prefix used to calculate the relative paths in the FileInfo objects.
-   * @param mode            The POSIX file mode.
-   * @param includePatterns A list of regular expression Pattern objects that list the files to include.
-   * @param excludePatterns A list of regular expression Pattern objects that list the files to exclude.
+   * @param prefix          (Optional) The prefix used to calculate the relative paths in the FileInfo objects.
+   * @param mode            (Optional) The POSIX file mode.
+   * @param userName        (Optional) The user name for the fileset.
+   * @param groupName       (Optional) The group name for the fileset.
+   * @param includePatterns (Optional) A list of regular expression Pattern objects that list the files to include.
+   * @param excludePatterns (Optional) A list of regular expression Pattern objects that list the files to exclude.
    */
-  public ArchiveFileSet(Path directory, String prefix, Integer mode, Collection<Pattern> includePatterns, Collection<Pattern> excludePatterns) {
+  public ArchiveFileSet(Path directory, String prefix, Integer mode, String userName, String groupName,
+                        Collection<Pattern> includePatterns, Collection<Pattern> excludePatterns) {
     super(directory, includePatterns, excludePatterns);
     this.prefix = prefix;
     this.mode = mode;
+    this.userName = userName;
+    this.groupName = groupName;
   }
 
   @Override
   public List<FileInfo> toFileInfos() throws IOException {
     List<FileInfo> infos = super.toFileInfos();
     if (prefix != null) {
-      infos.forEach((info) -> {
-        info.relative = Paths.get(prefix, info.relative.toString());
-      });
+      infos.forEach((info) -> info.relative = Paths.get(prefix, info.relative.toString()));
     }
     if (mode != null) {
-      infos.forEach((info) -> {
-        info.permissions = FileTools.toPosixPermissions(FileTools.toMode(mode));
-      });
+      infos.forEach((info) -> info.permissions = FileTools.toPosixPermissions(FileTools.toMode(mode)));
+    }
+    if (userName != null) {
+      infos.forEach((info) -> info.userName = userName);
+    }
+    if (groupName != null) {
+      infos.forEach((info) -> info.groupName = groupName);
     }
 
     return infos;

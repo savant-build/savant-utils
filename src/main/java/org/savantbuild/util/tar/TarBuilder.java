@@ -26,8 +26,10 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.savantbuild.io.Directory;
 import org.savantbuild.io.FileInfo;
 import org.savantbuild.io.FileSet;
+import org.savantbuild.io.FileTools;
 
 /**
  * Helps build Tar files.
@@ -35,15 +37,17 @@ import org.savantbuild.io.FileSet;
  * @author Brian Pontarelli
  */
 public class TarBuilder {
+  public final List<Directory> directories = new ArrayList<>();
+
   public final Path file;
 
   public final List<FileSet> fileSets = new ArrayList<>();
 
   public boolean compress = true;
 
-  public boolean storeGroup = false;
+  public boolean storeGroupName = false;
 
-  public boolean storeOwner = false;
+  public boolean storeUserName = false;
 
   public TarBuilder(String file) {
     this(Paths.get(file));
@@ -56,6 +60,12 @@ public class TarBuilder {
     this.compress = file.toString().endsWith(".gz");
   }
 
+  /**
+   * Builds the TAR file using the fileSets and Directories provided.
+   *
+   * @return The number of entries added to the TAR file including the directories.
+   * @throws IOException If the build fails.
+   */
   public int build() throws IOException {
     if (Files.exists(file)) {
       Files.delete(file);
@@ -70,14 +80,31 @@ public class TarBuilder {
     try (TarArchiveOutputStream tos = new TarArchiveOutputStream(compress ? new GZIPOutputStream(os) : os)) {
       tos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
+      for (Directory directory : directories) {
+        String name = directory.name;
+        TarArchiveEntry entry = new TarArchiveEntry(name.endsWith("/") ? name : name + "/");
+        if (directory.mode != null) {
+          entry.setMode(FileTools.toMode(directory.mode));
+        }
+        if (storeGroupName && directory.groupName != null) {
+          entry.setGroupName(directory.groupName);
+        }
+        if (storeUserName && directory.userName != null) {
+          entry.setUserName(directory.userName);
+        }
+        tos.putArchiveEntry(entry);
+        tos.closeArchiveEntry();
+        count++;
+      }
+
       for (FileSet fileSet : fileSets) {
         for (FileInfo fileInfo : fileSet.toFileInfos()) {
           TarArchiveEntry entry = new TarArchiveEntry(fileInfo.relative.toString());
           entry.setModTime(fileInfo.lastModifiedTime.toMillis());
-          if (storeGroup) {
+          if (storeGroupName) {
             entry.setGroupName(fileInfo.groupName);
           }
-          if (storeOwner) {
+          if (storeUserName) {
             entry.setUserName(fileInfo.userName);
           }
           entry.setSize(fileInfo.size);
@@ -91,6 +118,22 @@ public class TarBuilder {
     }
 
     return count;
+  }
+
+  public TarBuilder directory(Directory directory) throws IOException {
+    directories.add(directory);
+    return this;
+  }
+
+  public long getExplodedSize() throws IOException {
+    long size = 0;
+    for (FileSet fileSet : fileSets) {
+      for (FileInfo info : fileSet.toFileInfos()) {
+        size += info.size;
+      }
+    }
+
+    return size;
   }
 
   public TarBuilder fileSet(Path directory) throws IOException {

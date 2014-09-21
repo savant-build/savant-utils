@@ -88,7 +88,7 @@ public class ZipBuilderTest extends BaseUnitTest {
     assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 43);
+    assertEquals(count, 44);
   }
 
   @Test
@@ -122,7 +122,7 @@ public class ZipBuilderTest extends BaseUnitTest {
     assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 43);
+    assertEquals(count, 44);
   }
 
   @Test
@@ -133,7 +133,7 @@ public class ZipBuilderTest extends BaseUnitTest {
     assertTrue(Files.notExists(file));
 
     ZipBuilder builder = new ZipBuilder(file.toString());
-    builder.fileSet(new ArchiveFileSet(projectDir.resolve("src/main/java"), "foo", 0x755, asList(), asList()))
+    builder.fileSet(new ArchiveFileSet(projectDir.resolve("src/main/java"), "foo", 0x755, null, null, asList(), asList()))
            .build();
     assertTrue(Files.isReadable(file));
     assertZipContains(new ZipFile(file.toFile()), "foo/org/savantbuild/io/Copier.java", "foo/org/savantbuild/io/FileSet.java");
