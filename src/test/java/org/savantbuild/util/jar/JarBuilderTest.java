@@ -24,6 +24,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 
 import org.savantbuild.BaseUnitTest;
+import org.savantbuild.io.Directory;
 import org.savantbuild.io.FileSet;
 import org.savantbuild.io.FileTools;
 import org.testng.annotations.Test;
@@ -66,6 +67,15 @@ public class JarBuilderTest extends BaseUnitTest {
     assertEquals(jarEntry.getSize(), Files.size(original));
     assertEquals(jarEntry.getCreationTime(), Files.getAttribute(original, "creationTime"));
   }
+  private static void assertJarContainsDirectory(Path file, String entry, Integer mode) throws IOException {
+    JarFile jarFile = new JarFile(file.toFile());
+    JarEntry jarEntry = jarFile.getJarEntry(entry);
+    if (jarEntry == null) {
+      fail("JAR [" + file + "] is missing directory [" + entry + "]");
+    }
+
+    assertTrue(jarEntry.isDirectory());
+  }
 
   @Test
   public void build() throws Exception {
@@ -76,12 +86,14 @@ public class JarBuilderTest extends BaseUnitTest {
     int count = builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
                        .fileSet(new FileSet(projectDir.resolve("src/test/java")))
                        .optionalFileSet(new FileSet(projectDir.resolve("doesNotExist")))
+                       .directory(new Directory("test/directory", 0x755, "root", "root"))
                        .build();
     assertTrue(Files.isReadable(file));
     assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertJarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 44);
+    assertJarContainsDirectory(file, "test/directory/", 0x755);
+    assertEquals(count, 46);
   }
 
   @Test
@@ -115,6 +127,6 @@ public class JarBuilderTest extends BaseUnitTest {
     assertJarContains(new JarFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertJarFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 44);
+    assertEquals(count, 45);
   }
 }

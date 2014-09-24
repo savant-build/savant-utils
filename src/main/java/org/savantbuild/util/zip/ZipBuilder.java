@@ -24,8 +24,10 @@ import java.util.List;
 
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
+import org.savantbuild.io.Directory;
 import org.savantbuild.io.FileInfo;
 import org.savantbuild.io.FileSet;
+import org.savantbuild.io.FileTools;
 
 /**
  * Helps build Zip files.
@@ -33,6 +35,8 @@ import org.savantbuild.io.FileSet;
  * @author Brian Pontarelli
  */
 public class ZipBuilder {
+  public final List<Directory> directories = new ArrayList<>();
+
   public final Path file;
 
   public final List<FileSet> fileSets = new ArrayList<>();
@@ -46,6 +50,10 @@ public class ZipBuilder {
   }
 
   public int build() throws IOException {
+    if (Files.exists(file)) {
+      Files.delete(file);
+    }
+
     if (!Files.isDirectory(file.getParent())) {
       Files.createDirectories(file.getParent());
     }
@@ -53,6 +61,17 @@ public class ZipBuilder {
     int count = 0;
 
     try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(file))) {
+      for (Directory directory : directories) {
+        String name = directory.name;
+        ZipEntry entry = new ZipEntry(name.endsWith("/") ? name : name + "/");
+        if (directory.mode != null) {
+          entry.setUnixMode(FileTools.toMode(directory.mode));
+        }
+        zos.putNextEntry(entry);
+        zos.closeEntry();
+        count++;
+      }
+
       for (FileSet fileSet : fileSets) {
         for (FileInfo fileInfo : fileSet.toFileInfos()) {
           ZipEntry entry = new ZipEntry(fileInfo.relative.toString());
@@ -71,6 +90,11 @@ public class ZipBuilder {
     }
 
     return count;
+  }
+
+  public ZipBuilder directory(Directory directory) throws IOException {
+    directories.add(directory);
+    return this;
   }
 
   public ZipBuilder fileSet(Path directory) throws IOException {

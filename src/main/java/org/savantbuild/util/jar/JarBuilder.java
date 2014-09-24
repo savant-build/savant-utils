@@ -23,13 +23,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import org.savantbuild.io.Directory;
 import org.savantbuild.io.FileInfo;
 import org.savantbuild.io.FileSet;
 
@@ -39,6 +39,8 @@ import org.savantbuild.io.FileSet;
  * @author Brian Pontarelli
  */
 public class JarBuilder {
+  public final List<Directory> directories = new ArrayList<>();
+
   public final Path file;
 
   public final List<FileSet> fileSets = new ArrayList<>();
@@ -54,13 +56,25 @@ public class JarBuilder {
   }
 
   public int build() throws IOException {
+    if (Files.exists(file)) {
+      Files.delete(file);
+    }
+
     if (!Files.isDirectory(file.getParent())) {
       Files.createDirectories(file.getParent());
     }
 
-    AtomicInteger count = new AtomicInteger(0);
+    int count = 0;
 
     try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(file), manifest)) {
+      for (Directory directory : directories) {
+        String name = directory.name;
+        JarEntry entry = new JarEntry(name.endsWith("/") ? name : name + "/");
+        jos.putNextEntry(entry);
+        jos.closeEntry();
+        count++;
+      }
+
       for (FileSet fileSet : fileSets) {
         for (FileInfo fileInfo : fileSet.toFileInfos()) {
           JarEntry entry = new JarEntry(fileInfo.relative.toString());
@@ -73,12 +87,17 @@ public class JarBuilder {
           Files.copy(fileInfo.origin, jos);
           jos.flush();
           jos.closeEntry();
-          count.incrementAndGet();
+          count++;
         }
       }
     }
 
-    return count.get();
+    return count;
+  }
+
+  public JarBuilder directory(Directory directory) throws IOException {
+    directories.add(directory);
+    return this;
   }
 
   public JarBuilder ensureManifest(String vendor, String version) {

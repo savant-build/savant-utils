@@ -22,11 +22,12 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import org.apache.tools.zip.ZipFile;
 import org.savantbuild.BaseUnitTest;
 import org.savantbuild.io.ArchiveFileSet;
+import org.savantbuild.io.Directory;
 import org.savantbuild.io.FileSet;
 import org.savantbuild.io.FileTools;
 import org.testng.annotations.Test;
@@ -47,6 +48,19 @@ public class ZipBuilderTest extends BaseUnitTest {
   private static void assertZipContains(ZipFile zipFile, String... entries) throws Exception {
     stream(entries).forEach((entry) -> assertNotNull(zipFile.getEntry(entry), "Zip [" + zipFile + "] is missing entry [" + entry + "]"));
     zipFile.close();
+  }
+
+  private static void assertZipContainsDirectory(Path file, String entry, Integer mode) throws IOException {
+    ZipFile zipFile = new ZipFile(file.toFile());
+    org.apache.tools.zip.ZipEntry zipEntry = zipFile.getEntry(entry);
+    if (zipEntry == null) {
+      fail("ZIP [" + zipFile + "] is missing directory [" + entry + "]");
+    }
+
+    assertTrue(zipEntry.isDirectory());
+    if (mode != null) {
+      assertEquals(zipEntry.getUnixMode(), FileTools.toMode(mode));
+    }
   }
 
   private static void assertZipFileEquals(Path zipFile, String entry, Path original) throws IOException {
@@ -83,12 +97,14 @@ public class ZipBuilderTest extends BaseUnitTest {
     int count = builder.fileSet(new FileSet(projectDir.resolve("src/main/java")))
                        .fileSet(new FileSet(projectDir.resolve("src/test/java")))
                        .optionalFileSet(new FileSet(projectDir.resolve("doesNotExist")))
+                       .directory(new Directory("test/directory", 0x755, "root", "root"))
                        .build();
     assertTrue(Files.isReadable(file));
     assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 44);
+    assertZipContainsDirectory(file, "test/directory/", 0x755);
+    assertEquals(count, 46);
   }
 
   @Test
@@ -122,7 +138,7 @@ public class ZipBuilderTest extends BaseUnitTest {
     assertZipContains(new ZipFile(file.toFile()), "org/savantbuild/io/Copier.java", "org/savantbuild/io/CopierTest.java",
         "org/savantbuild/io/FileSet.java", "org/savantbuild/io/FileTools.java");
     assertZipFileEquals(file, "org/savantbuild/io/Copier.java", projectDir.resolve("src/main/java/org/savantbuild/io/Copier.java"));
-    assertEquals(count, 44);
+    assertEquals(count, 45);
   }
 
   @Test

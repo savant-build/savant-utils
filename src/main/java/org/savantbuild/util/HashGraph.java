@@ -270,8 +270,6 @@ public class HashGraph<T, U> implements Graph<T, U> {
     if (node == null) {
       node = new HashNode<>(value);
       nodes.put(value, node);
-    } else {
-      node.value = value;
     }
 
     return node;
@@ -306,6 +304,10 @@ public class HashGraph<T, U> implements Graph<T, U> {
     }
 
     return null;
+  }
+
+  protected HashNode<T, U> getNode(T value) {
+    return nodes.get(value);
   }
 
   protected void traverse(HashNode<T, U> root, boolean visitNodesOnce, Set<T> cycleCheck, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
