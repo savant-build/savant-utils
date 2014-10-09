@@ -15,6 +15,7 @@
  */
 package org.savantbuild.lang;
 
+import org.savantbuild.lang.Classpath;
 import org.testng.annotations.Test;
 
 import java.io.File;

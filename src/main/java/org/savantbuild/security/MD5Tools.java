@@ -13,11 +13,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package org.savantbuild.io;
-
-import org.savantbuild.lang.StringTools;
-import org.savantbuild.security.MD5;
-import org.savantbuild.security.MD5Exception;
+package org.savantbuild.security;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -29,12 +25,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import org.savantbuild.lang.StringTools;
+
 /**
  * This class provides some common IO tools.
  *
  * @author Brian Pontarelli
  */
-public class IOTools {
+public class MD5Tools {
   /**
    * Reads from the given input stream and writes the contents out to the given OutputStream. During the write, the MD5
    * sum from input stream is calculated and compared with the given MD5 sum. This does not close the InputStream but

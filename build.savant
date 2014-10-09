@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-project(group: "org.savantbuild", name: "savant-utils", version: "0.2.2", licenses: ["ApacheV2_0"]) {
+project(group: "org.savantbuild", name: "savant-utils", version: "0.3.0", licenses: ["ApacheV2_0"]) {
   workflow {
     standard()
   }
@@ -23,10 +23,6 @@ project(group: "org.savantbuild", name: "savant-utils", version: "0.2.2", licens
   }
 
   dependencies {
-    group(name: "compile") {
-      dependency(id: "org.apache.ant:ant:1.9.4")
-      dependency(id: "org.apache.commons:commons-compress:1.7.0")
-    }
     group(name: "test-compile", export: false) {
       dependency(id: "org.testng:testng:6.8.7")
     }

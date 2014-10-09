@@ -29,7 +29,7 @@ import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Base64;
 
-import org.savantbuild.io.IOTools;
+import org.savantbuild.security.MD5Tools;
 import org.savantbuild.security.MD5;
 import org.savantbuild.security.MD5Exception;
 
@@ -128,7 +128,7 @@ public class NetTools {
     file.deleteOnExit();
 
     try (InputStream is = uc.getInputStream(); FileOutputStream os = new FileOutputStream(file)) {
-      IOTools.write(is, os, md5);
+      MD5Tools.write(is, os, md5);
       os.flush();
     }
 
