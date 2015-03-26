@@ -143,10 +143,12 @@ public interface Graph<T, U> {
    * @param visitNodesOnce Determines if nodes should be visited once or multiple times during the traversal. Graphs can
    *                       have nodes with multiple links to them. Therefore, a traversal might visit the same node
    *                       twice. This flag determines if the traversal should visit nodes once only.
+   * @param edgeFilter     The edge filter used to control the traversal if necessary. If this is null, the identity
+   *                       filter is used, which essentially keeps all of the edges.
    * @param consumer       The GraphConsumer that is called for each edge.
    * @throws CyclicException If there is a cycle in the graph.
    */
-  void traverse(T rootValue, boolean visitNodesOnce, GraphConsumer<T, U> consumer) throws CyclicException;
+  void traverse(T rootValue, boolean visitNodesOnce, EdgeFilter<T, U> edgeFilter, GraphConsumer<T, U> consumer) throws CyclicException;
 
   /**
    * Traverses the graph in a depth-first manner ending at the node whose value is given. This traverses down the Graph
@@ -259,6 +261,40 @@ public interface Graph<T, U> {
   }
 
   /**
+   * Edge filter that determines if an edge should be included in a traversal. This can be based solely on the edge
+   * value or it can be based on the entry point to the current node. For this graph:
+   * <p>
+   * <pre>
+   *   A -1-> B -2-> C
+   * </pre>
+   * <p>
+   * If you are at B traversing to C, edge will be '2' and entryPoint will be '1'.
+   *
+   * @param <T> The node type.
+   * @param <U> The edge type.
+   */
+  public static interface EdgeFilter<T, U> {
+    /**
+     * Tests the edge.
+     *
+     * @param edge       The edge.
+     * @param entryPoint The entry point to the current node.
+     * @return True if the edge should be kept, false if it should be ignored.
+     */
+    boolean filter(Edge<T, U> edge, Edge<T, U> entryPoint);
+
+    /**
+     * An edge filter that always returns true.
+     */
+    public static class IdentityEdgeFilter<T, U> implements EdgeFilter<T, U> {
+      @Override
+      public boolean filter(Edge<T, U> edge, Edge<T, U> entryPoint) {
+        return true;
+      }
+    }
+  }
+
+  /**
    * Consumer interface for graph traversal.
    *
    * @param <T> The node value type.
@@ -273,10 +309,11 @@ public interface Graph<T, U> {
      * @param destination The destination node value.
      * @param edgeValue   The edge value.
      * @param depth       The current depth in the graph.
+     * @param isLast      If this is the last node at this depth.
      * @return True if the traversal should continue down from the destination node. False if the traversal should exit
      * and resume from the origin node.
      */
-    public boolean consume(T origin, T destination, U edgeValue, int depth);
+    boolean consume(T origin, T destination, U edgeValue, int depth, boolean isLast);
   }
 
   /**
@@ -295,7 +332,7 @@ public interface Graph<T, U> {
      * @param edgeValue   The edge value.
      * @param depth       The current depth in the graph.
      */
-    public void visit(T origin, T destination, U edgeValue, int depth);
+    void visit(T origin, T destination, U edgeValue, int depth);
   }
 
   /**
@@ -307,7 +344,7 @@ public interface Graph<T, U> {
     /**
      * @return The path.
      */
-    public List<T> get();
+    List<T> get();
 
     /**
      * A simple implementation for the Path interface. This takes a constructor parameter that is the Path list and

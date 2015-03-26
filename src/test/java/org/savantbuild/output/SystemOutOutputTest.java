@@ -30,9 +30,9 @@ import static org.testng.Assert.assertEquals;
 public class SystemOutOutputTest {
   public static void main(String[] args) {
     Output output = new SystemOutOutput(true);
-    output.error("Error");
-    output.warning("Warning");
-    output.info("Info");
+    output.errorln("Error");
+    output.warningln("Warning");
+    output.infoln("Info");
   }
 
   @Test
@@ -40,9 +40,9 @@ public class SystemOutOutputTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream out = new PrintStream(baos);
     Output output = new SystemOutOutput(out, false);
-    output.error("Error");
-    output.warning("Warning");
-    output.info("Info");
+    output.errorln("Error");
+    output.warningln("Warning");
+    output.infoln("Info");
 
     assertEquals(baos.toString(), "Error\nWarning\nInfo\n");
   }

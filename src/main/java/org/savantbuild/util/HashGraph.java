@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.savantbuild.util.Graph.Edge.BaseEdge;
+import org.savantbuild.util.Graph.EdgeFilter.IdentityEdgeFilter;
 import org.savantbuild.util.Graph.Path.BasePath;
 
 import static java.util.Arrays.asList;
@@ -125,9 +126,9 @@ public class HashGraph<T, U> implements Graph<T, U> {
     }
 
     return node.inbound
-               .stream()
-               .map(HashEdge::toEdge)
-               .collect(Collectors.toList());
+        .stream()
+        .map(HashEdge::toEdge)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -138,16 +139,16 @@ public class HashGraph<T, U> implements Graph<T, U> {
     }
 
     return node.outbound
-               .stream()
-               .map(HashEdge::toEdge)
-               .collect(Collectors.toList());
+        .stream()
+        .map(HashEdge::toEdge)
+        .collect(Collectors.toList());
   }
 
   @Override
   public List<Path<T>> getPaths(T origin, T destination) {
     List<Path<T>> paths = new ArrayList<>();
     LinkedList<T> current = new LinkedList<>();
-    traverse(origin, false, (originValue, destinationValue, edgeValue, depth) -> {
+    traverse(origin, false, null, (originValue, destinationValue, edgeValue, depth, isLast) -> {
       if (depth == 1) {
         current.clear();
         current.add(origin);
@@ -221,19 +222,24 @@ public class HashGraph<T, U> implements Graph<T, U> {
    *
    * @param rootValue      The value of the node to start the traversal from.
    * @param visitNodesOnce Determines if nodes are visited once if they have multiple links.
+   * @param edgeFilter     The EdgeFilter that is used to control the traversal.
    * @param consumer       The GraphConsumer that is called for each edge.
    * @throws CyclicException If there is a cycle in the graph.
    */
   @Override
-  public void traverse(T rootValue, boolean visitNodesOnce, GraphConsumer<T, U> consumer) throws CyclicException {
+  public void traverse(T rootValue, boolean visitNodesOnce, EdgeFilter<T, U> edgeFilter, GraphConsumer<T, U> consumer) throws CyclicException {
     HashNode<T, U> rootNode = nodes.get(rootValue);
     if (rootNode == null) {
       throw new IllegalArgumentException("Invalid rootValue [" + rootValue + "] to start the traversal from.");
     }
 
+    if (edgeFilter == null) {
+      edgeFilter = new IdentityEdgeFilter<>();
+    }
+
     Set<T> cycleCheck = new HashSet<>();
     Set<T> visited = new HashSet<>();
-    traverse(rootNode, visitNodesOnce, cycleCheck, visited, consumer, 1);
+    traverse(rootNode, null, visitNodesOnce, cycleCheck, visited, edgeFilter, consumer, 1);
   }
 
   /**
@@ -310,8 +316,18 @@ public class HashGraph<T, U> implements Graph<T, U> {
     return nodes.get(value);
   }
 
-  protected void traverse(HashNode<T, U> root, boolean visitNodesOnce, Set<T> cycleCheck, Set<T> visited, GraphConsumer<T, U> consumer, int depth) {
-    root.outbound.forEach((edge) -> {
+  protected void traverse(HashNode<T, U> root, HashEdge<T, U> traversedEdge, boolean visitNodesOnce, Set<T> cycleCheck,
+                          Set<T> visited, EdgeFilter<T, U> edgeFilter, GraphConsumer<T, U> consumer, int depth) {
+    List<HashEdge<T, U>> edges = root.outbound;
+    if (traversedEdge != null) {
+      edges = root.outbound
+          .stream()
+          .filter((edge) -> edgeFilter.filter(edge.toEdge(), traversedEdge.toEdge()))
+          .collect(Collectors.toList());
+    }
+
+    for (int i = 0; i < edges.size(); i++) {
+      HashEdge<T, U> edge = edges.get(i);
       if (cycleCheck.contains(edge.destination.value)) {
         throw new CyclicException("Encountered the graph node [" + edge.destination.value + "] twice. Your graph has a cycle");
       }
@@ -322,15 +338,15 @@ public class HashGraph<T, U> implements Graph<T, U> {
 
       cycleCheck.add(root.value);
 
-      boolean cont = consumer.consume(root.value, edge.destination.value, edge.value, depth);
+      boolean cont = consumer.consume(root.value, edge.destination.value, edge.value, depth, i + 1 == edges.size());
       visited.add(edge.destination.value);
 
       if (cont) {
-        traverse(edge.destination, visitNodesOnce, cycleCheck, visited, consumer, depth + 1);
+        traverse(edge.destination, edge, visitNodesOnce, cycleCheck, visited, edgeFilter, consumer, depth + 1);
       }
 
       cycleCheck.remove(root.value);
-    });
+    }
   }
 
   protected void traverseUp(HashNode<T, U> root, Set<T> visited, GraphVisitor<T, U> consumer, int depth) {

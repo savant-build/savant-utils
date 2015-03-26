@@ -22,55 +22,104 @@ package org.savantbuild.output;
  */
 public interface Output {
   /**
-   * Outputs a debug message along with the given values. This uses printf if there are values and append a newline
+   * Outputs a debug message along with the given values. This uses printf if there are values and DOES NOT append a
+   * newline character to the end of message. If there are no values, this outputs the message via print.
+   *
+   * @param message The message.
+   * @param values  Values for the message.
+   * @return This.
+   */
+  Output debug(String message, Object... values);
+
+  /**
+   * Outputs a debug message along with the given values. This uses printf if there are values and appends a newline
    * character to the end of message. If there are no values, this outputs the message via println.
    *
    * @param message The message.
    * @param values  Values for the message.
+   * @return This.
    */
-  void debug(String message, Object... values);
+  Output debugln(String message, Object... values);
 
   /**
    * Outputs a debug message with the stack trace for the given Throwable.
    *
    * @param t The Throwable to output.
+   * @return This.
    */
-  void debug(Throwable t);
+  Output debug(Throwable t);
 
   /**
    * Disables debug messages.
+   *
+   * @return This.
    */
-  void disableDebug();
+  Output disableDebug();
 
   /**
    * Enables debug messages.
+   *
+   * @return This.
    */
-  void enableDebug();
+  Output enableDebug();
 
   /**
-   * Outputs an error message along with the given values. This uses printf if there are values and append a newline
+   * Outputs an error message along with the given values. This uses printf if there are values and DOES NOT append a
+   * newline character to the end of message. If there are no values, this outputs the message via println.
+   *
+   * @param message The message.
+   * @param values  Values for the message.
+   * @return This.
+   */
+  Output error(String message, Object... values);
+
+  /**
+   * Outputs an error message along with the given values. This uses printf if there are values and appends a newline
    * character to the end of message. If there are no values, this outputs the message via println.
    *
    * @param message The message.
    * @param values  Values for the message.
+   * @return This.
    */
-  void error(String message, Object... values);
+  Output errorln(String message, Object... values);
 
   /**
-   * Outputs an info message along with the given values. This uses printf if there are values and append a newline
+   * Outputs an info message along with the given values. This uses printf if there are values and DOES NOT append a
+   * newline character to the end of message. If there are no values, this outputs the message via println.
+   *
+   * @param message The message.
+   * @param values  Values for the message.
+   * @return This.
+   */
+  Output info(String message, Object... values);
+
+  /**
+   * Outputs an info message along with the given values. This uses printf if there are values and appends a newline
    * character to the end of message. If there are no values, this outputs the message via println.
    *
    * @param message The message.
    * @param values  Values for the message.
+   * @return This.
    */
-  void info(String message, Object... values);
+  Output infoln(String message, Object... values);
 
   /**
-   * Outputs a warning message along with the given values. This uses printf if there are values and append a newline
+   * Outputs a warning message along with the given values. This uses printf if there are values and DOES NOT append a
+   * newline character to the end of message. If there are no values, this outputs the message via println.
+   *
+   * @param message The message.
+   * @param values  Values for the message.
+   * @return This.
+   */
+  Output warning(String message, Object... values);
+
+  /**
+   * Outputs a warning message along with the given values. This uses printf if there are values and appends a newline
    * character to the end of message. If there are no values, this outputs the message via println.
    *
    * @param message The message.
    * @param values  Values for the message.
+   * @return This.
    */
-  void warning(String message, Object... values);
+  Output warningln(String message, Object... values);
 }

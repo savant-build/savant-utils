@@ -15,22 +15,20 @@
  */
 package org.savantbuild.util;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 import org.savantbuild.BaseUnitTest;
 import org.savantbuild.util.Graph.Edge;
 import org.savantbuild.util.Graph.Edge.BaseEdge;
 import org.savantbuild.util.Graph.Path;
 import org.savantbuild.util.Graph.Path.BasePath;
-import org.savantbuild.util.HashGraph;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
@@ -56,8 +54,6 @@ public class HashGraphTest extends BaseUnitTest {
    *    |                                       |
    *    |--------------(one-three)--------------|
    * </pre>
-   *
-   * @throws Exception
    */
   public HashGraphTest() {
     graph = new HashGraph<>();
@@ -324,7 +320,7 @@ public class HashGraphTest extends BaseUnitTest {
   public void traverse() {
     List<String> origins = new ArrayList<>();
     List<String> destinations = new ArrayList<>();
-    graph.traverse("one", false, (origin, destination, edge, depth) -> {
+    graph.traverse("one", false, null, (origin, destination, edge, depth, isLast) -> {
       System.out.println("" + origin + "-(" + edge + ")->" + destination + " depth: " + depth);
       if (destination.equals("two")) {
         assertEquals(origin, "one");
@@ -364,7 +360,7 @@ public class HashGraphTest extends BaseUnitTest {
   public void traverseOnce() {
     List<String> origins = new ArrayList<>();
     List<String> destinations = new ArrayList<>();
-    graph.traverse("one", true, (origin, destination, edge, depth) -> {
+    graph.traverse("one", true, null, (origin, destination, edge, depth, isLast) -> {
       System.out.println("" + origin + "-(" + edge + ")->" + destination + " depth: " + depth);
       if (destination.equals("two")) {
         assertEquals(origin, "one");

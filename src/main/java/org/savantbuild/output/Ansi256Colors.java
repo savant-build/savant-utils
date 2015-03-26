@@ -36,8 +36,20 @@ public final class Ansi256Colors {
     stream.print("m");
   }
 
+  public static void setColor(StringBuilder build, short foreground) {
+    build.append(ESCAPE);
+    build.append("[38;5;");
+    build.append(Short.toString(foreground));
+    build.append("m");
+  }
+
   public static void clear(PrintStream stream) {
     stream.print(ESCAPE);
     stream.print("[0m");
+  }
+
+  public static void clear(StringBuilder build) {
+    build.append(ESCAPE);
+    build.append("[0m");
   }
 }

@@ -39,30 +39,55 @@ public class SystemOutOutput implements Output {
     this.colorize = colorize;
   }
 
-  public void debug(String message, Object... values) {
+  public Output debug(String message, Object... values) {
+    if (debugEnabled) {
+      print(message, values);
+    }
+    return this;
+  }
+
+  public Output debugln(String message, Object... values) {
     if (debugEnabled) {
       println(message, values);
     }
+    return this;
   }
 
   @Override
-  public void debug(Throwable t) {
+  public Output debug(Throwable t) {
     if (debugEnabled) {
       t.printStackTrace(out);
     }
+    return this;
   }
 
   @Override
-  public void disableDebug() {
+  public Output disableDebug() {
     this.debugEnabled = false;
+    return this;
   }
 
   @Override
-  public void enableDebug() {
+  public Output enableDebug() {
     this.debugEnabled = true;
+    return this;
   }
 
-  public void error(String message, Object... values) {
+  public Output error(String message, Object... values) {
+    if (colorize) {
+      Ansi256Colors.setColor(out, Ansi256Colors.ERROR);
+    }
+
+    print(message, values);
+
+    if (colorize) {
+      Ansi256Colors.clear(out);
+    }
+
+    return this;
+  }
+
+  public Output errorln(String message, Object... values) {
     if (colorize) {
       Ansi256Colors.setColor(out, Ansi256Colors.ERROR);
     }
@@ -72,13 +97,35 @@ public class SystemOutOutput implements Output {
     if (colorize) {
       Ansi256Colors.clear(out);
     }
+
+    return this;
   }
 
-  public void info(String message, Object... values) {
+  public Output info(String message, Object... values) {
+    print(message, values);
+    return this;
+  }
+
+  public Output infoln(String message, Object... values) {
     println(message, values);
+    return this;
   }
 
-  public void warning(String message, Object... values) {
+  public Output warning(String message, Object... values) {
+    if (colorize) {
+      Ansi256Colors.setColor(out, Ansi256Colors.WARNING);
+    }
+
+    print(message, values);
+
+    if (colorize) {
+      Ansi256Colors.clear(out);
+    }
+
+    return this;
+  }
+
+  public Output warningln(String message, Object... values) {
     if (colorize) {
       Ansi256Colors.setColor(out, Ansi256Colors.WARNING);
     }
@@ -87,6 +134,16 @@ public class SystemOutOutput implements Output {
 
     if (colorize) {
       Ansi256Colors.clear(out);
+    }
+
+    return this;
+  }
+
+  private void print(String message, Object[] values) {
+    if (values.length == 0) {
+      out.print(message);
+    } else {
+      out.printf(message, values);
     }
   }
 
