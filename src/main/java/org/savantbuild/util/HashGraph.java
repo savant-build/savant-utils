@@ -333,7 +333,7 @@ public class HashGraph<T, U> implements Graph<T, U> {
       }
 
       if (visitNodesOnce && visited.contains(edge.destination.value)) {
-        return;
+        continue;
       }
 
       cycleCheck.add(root.value);

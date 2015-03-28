@@ -18,6 +18,7 @@ package org.savantbuild.util;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.savantbuild.BaseUnitTest;
 import org.savantbuild.util.Graph.Edge;
@@ -394,6 +395,31 @@ public class HashGraphTest extends BaseUnitTest {
 
     assertEquals(origins, asList("one", "two", "three", "two"));
     assertEquals(destinations, asList("two", "three", "five", "four"));
+  }
+
+  /**
+   * This test ensures that the traversal hits all of the child nodes at least once. We had a bug in 0.4.0 that
+   * prevented the traversal from hitting everything. This ensures it is fixed.
+   */
+  @Test
+  public void traverseMultiplePathsToTransitives() {
+    HashGraph<String, String> graph = new HashGraph<>();
+    graph.addEdge("one", "two", "one-two");
+    graph.addEdge("two", "end1", "two-end1");
+    graph.addEdge("two", "end2", "two-end2");
+    graph.addEdge("two", "end3", "two-end3");
+    graph.addEdge("one", "three", "one-three");
+    graph.addEdge("three", "end3", "three-five");
+    graph.addEdge("three", "end4", "end4");
+    graph.addEdge("three", "end5", "end5");
+
+    Set<String> visited = new HashSet<>();
+    graph.traverse("one", true, null, (origin, destination, edge, depth, isLast) -> {
+      visited.add(destination);
+      return true;
+    });
+
+    assertEquals(visited, new HashSet<>(asList("two", "three", "end1", "end2", "end3", "end4", "end5")));
   }
 
   @Test
