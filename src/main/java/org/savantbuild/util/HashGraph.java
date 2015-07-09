@@ -109,11 +109,17 @@ public class HashGraph<T, U> implements Graph<T, U> {
    *
    * @param rootValue The value of the node to start the traversal from.
    * @param predicate The predicate used to find the node.
+   * @return The value of the first node that matches the predicate starting at the rootValue node. Null if the
+   * rootValue not doesn't exist or if no nodes match the predicate.
    * @throws CyclicException If there is a cycle in the graph.
    */
   @Override
   public T find(T rootValue, Predicate<T> predicate) throws CyclicException {
     HashNode<T, U> rootNode = nodes.get(rootValue);
+    if (rootNode == null) {
+      return null;
+    }
+
     Set<T> visited = new HashSet<>();
     return find(rootNode, visited, predicate);
   }
