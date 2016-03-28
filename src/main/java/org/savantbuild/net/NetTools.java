@@ -108,8 +108,8 @@ public class NetTools {
       huc.setHostnameVerifier((s, sslSession) -> true);
     }
 
-    uc.setConnectTimeout(1000);
-    uc.setReadTimeout(1000);
+    uc.setConnectTimeout(4000);
+    uc.setReadTimeout(10000);
     uc.setDoInput(true);
     uc.setDoOutput(false);
     uc.connect();
