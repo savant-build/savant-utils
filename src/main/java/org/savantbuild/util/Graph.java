@@ -22,13 +22,14 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * This interface defines the generic graph data structure.
  * <p>
+ * This interface defines the generic graph data structure.
+ * </p>
  * <h3>Graphs</h3>
  * <p>
  * Graphs are simple structures that model nodes with any number of connections between nodes. The connections are
  * bi-directional and are called Edges. A two node graph with an edge between the nodes looks like this:
- * <p>
+ * </p>
  * <pre>
  * node1 &lt;---&gt; node2
  * </pre>
@@ -37,12 +38,13 @@ import java.util.function.Predicate;
  * entire structure like trees do. Instead, implementations can choose to have the graph store all of the nodes and the
  * connections between them allowing for direct access to any node. These implementations should define how the direct
  * access is managed and whether or not duplicate nodes can be stored.
- * <p>
+ * </p>
  * <h3>Generics</h3>
  * <p>
  * There are two generics for a Graph. The first variable T is the content of the nodes themselves. Each node can stored
  * a single value. The second generic is the value that can be associated with the Edge between nodes. This is carried
  * throughout the entire graph structure making it very strongly typed.
+ * </p>
  *
  * @author Brian Pontarelli
  */
@@ -73,6 +75,7 @@ public interface Graph<T, U> {
    *
    * @param rootValue The value of the node to start the traversal from.
    * @param predicate The predicate used to find the node.
+   * @return The value at the node or null if the node isn't found.
    * @throws CyclicException If there is a cycle in the graph.
    */
   T find(T rootValue, Predicate<T> predicate) throws CyclicException;
@@ -174,21 +177,21 @@ public interface Graph<T, U> {
    * @param <T> The node value type.
    * @param <U> The edge value type.
    */
-  public static interface Edge<T, U> {
+  interface Edge<T, U> {
     /**
      * @return The destination node value.
      */
-    public T getDestination();
+    T getDestination();
 
     /**
      * @return The origin node value.
      */
-    public T getOrigin();
+    T getOrigin();
 
     /**
      * @return The edge value.
      */
-    public U getValue();
+    U getValue();
 
     /**
      * Basic implementation of the Edge interface. Provides public final fields and public accessors.
@@ -196,7 +199,7 @@ public interface Graph<T, U> {
      * @param <T> The node value type.
      * @param <U> The edge value type.
      */
-    public static class BaseEdge<T, U> implements Edge<T, U> {
+    class BaseEdge<T, U> implements Edge<T, U> {
       public final T destination;
 
       public final T origin;
@@ -261,19 +264,21 @@ public interface Graph<T, U> {
   }
 
   /**
+   * <p>
    * Edge filter that determines if an edge should be included in a traversal. This can be based solely on the edge
    * value or it can be based on the entry point to the current node. For this graph:
-   * <p>
+   * </p>
    * <pre>
-   *   A -1-> B -2-> C
+   *   A -1-&gt; B -2-&gt; C
    * </pre>
    * <p>
    * If you are at B traversing to C, edge will be '2' and entryPoint will be '1'.
+   * </p>
    *
    * @param <T> The node type.
    * @param <U> The edge type.
    */
-  public static interface EdgeFilter<T, U> {
+  interface EdgeFilter<T, U> {
     /**
      * Tests the edge.
      *
@@ -286,7 +291,7 @@ public interface Graph<T, U> {
     /**
      * An edge filter that always returns true.
      */
-    public static class IdentityEdgeFilter<T, U> implements EdgeFilter<T, U> {
+    class IdentityEdgeFilter<T, U> implements EdgeFilter<T, U> {
       @Override
       public boolean filter(Edge<T, U> edge, Edge<T, U> entryPoint) {
         return true;
@@ -300,7 +305,7 @@ public interface Graph<T, U> {
    * @param <T> The node value type.
    * @param <U> The edge value type
    */
-  public static interface GraphConsumer<T, U> {
+  interface GraphConsumer<T, U> {
     /**
      * Called by the graph during traversal to handle each node in the graph. The parameters passed in constitute an
      * edge between two nodes. This method will not visit detached clusters of nodes.
@@ -322,7 +327,7 @@ public interface Graph<T, U> {
    * @param <T> The node value type.
    * @param <U> The edge value type
    */
-  public static interface GraphVisitor<T, U> {
+  interface GraphVisitor<T, U> {
     /**
      * Called by the graph during traversal to handle each node in the graph. The parameters passed in constitute an
      * edge between two nodes. This method will not visit detached clusters of nodes.
@@ -340,50 +345,50 @@ public interface Graph<T, U> {
    *
    * @param <T> The node type.
    */
-  public static interface Path<T> {
+  interface Path<T> {
     /**
      * @return The path.
      */
     List<T> get();
 
+  }
+  /**
+   * A simple implementation for the Path interface. This takes a constructor parameter that is the Path list and
+   * shallow copies it to a new unmodifiable LinkedList.
+   *
+   * @param <T> The node value type.
+   */
+  class BasePath<T> implements Path<T> {
+    private final List<T> path;
+
+    public BasePath(List<T> path) {
+      this.path = Collections.unmodifiableList(new LinkedList<>(path));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      final BasePath basePath = (BasePath) o;
+      return path.equals(basePath.path);
+    }
+
     /**
-     * A simple implementation for the Path interface. This takes a constructor parameter that is the Path list and
-     * shallow copies it to a new unmodifiable LinkedList.
-     *
-     * @param <T> The node value type.
+     * {@inheritDoc}
      */
-    public static class BasePath<T> implements Path<T> {
-      private final List<T> path;
+    @Override
+    public List<T> get() {
+      return path;
+    }
 
-      public BasePath(List<T> path) {
-        this.path = Collections.unmodifiableList(new LinkedList<>(path));
-      }
-
-      @Override
-      public boolean equals(Object o) {
-        if (this == o) {
-          return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-          return false;
-        }
-
-        final BasePath basePath = (BasePath) o;
-        return path.equals(basePath.path);
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public List<T> get() {
-        return path;
-      }
-
-      @Override
-      public int hashCode() {
-        return path.hashCode();
-      }
+    @Override
+    public int hashCode() {
+      return path.hashCode();
     }
   }
 }

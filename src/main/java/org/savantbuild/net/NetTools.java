@@ -44,6 +44,7 @@ public class NetTools {
    *
    * @param parts The parts
    * @return The URI.
+   * @throws URISyntaxException If the parts passed in are not valid URI components.
    */
   public static URI build(String... parts) throws URISyntaxException {
     StringBuilder build = new StringBuilder(parts[0]);

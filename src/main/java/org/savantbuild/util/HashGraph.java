@@ -27,19 +27,19 @@ import java.util.stream.Collectors;
 
 import org.savantbuild.util.Graph.Edge.BaseEdge;
 import org.savantbuild.util.Graph.EdgeFilter.IdentityEdgeFilter;
-import org.savantbuild.util.Graph.Path.BasePath;
 
 import static java.util.Arrays.asList;
 
 /**
+ * <p>
  * This class is used to construct and manage graph structures. This is a simple class that makes the navigation and
  * usage of Graphs simple and accessible.
- * <p>
+ * </p>
  * <h3>Graphs</h3>
  * <p>
  * Graphs are simple structures that model nodes with any number of connections between nodes. The connections are
  * bi-directional and are called Edges. A two node graph with an edge between the nodes looks like this:
- * <p>
+ * </p>
  * <pre>
  * node1 &lt;---&gt; node2
  * </pre>
@@ -47,13 +47,13 @@ import static java.util.Arrays.asList;
  * The important point about Graphs is that they don't enforce a top level node that controls the entire structure like
  * trees do. Instead, the graph has access to all nodes and the connections between them. This makes finding a Node easy
  * and then traversing the graph also easy.
- * <p>
+ * </p>
  * <h3>Generics</h3>
  * <p>
  * There are two generics for a Graph. The first variable T is the content of the nodes themselves. Each node can stored
  * a single value. The second generic is the value that can be associated with the Edge between nodes. This is carried
  * throughout the entire graph structure making it very strongly typed.
- * <p>
+ * </p>
  * <h3>Internals</h3>
  * <p>
  * It is important to understand how the Graph works internally. Nodes are stored in a Map whose key is the value for
@@ -61,16 +61,17 @@ import static java.util.Arrays.asList;
  * that the graph does not allow duplicates. Therefore it would be impossible to have two nodes whose values are
  * <em>foo</em> with different edges. The key of the Map is a {@link HashNode} object. The node stores the value as well
  * as all the edges.
- * <p>
+ * </p>
  * <h3>Node values</h3>
  * <p>
  * Due to the implementation of the graph, all values must have a good equal and hashcode implementation. Using the
  * object identity is allowed and will then manage the graph based on the heap location of the value objects (pointers
  * are used for the java.lang.Object version of equals and hashcode).
- * <p>
+ * </p>
  * <h3>Thread safety</h3>
  * <p>
  * The Graph is not thread safe. Classes must synchronize on the graph instance in order to protect multi-threaded use.
+ * </p>
  *
  * @author Brian Pontarelli
  */
