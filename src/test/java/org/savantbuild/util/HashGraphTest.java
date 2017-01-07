@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.savantbuild.BaseUnitTest;
+import org.savantbuild.util.Graph.BasePath;
 import org.savantbuild.util.Graph.Edge;
 import org.savantbuild.util.Graph.Edge.BaseEdge;
 import org.savantbuild.util.Graph.Path;
-import org.savantbuild.util.Graph.Path.BasePath;
 import org.testng.annotations.Test;
 
 import static java.util.Arrays.asList;
