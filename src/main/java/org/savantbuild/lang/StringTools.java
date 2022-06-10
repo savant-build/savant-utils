@@ -23,7 +23,7 @@ package org.savantbuild.lang;
 public class StringTools {
   /**
    * Converts the contents of the given String from hexadecimal to an array of bytes. Each character of the String is a
-   * single hex value. Therefore, the the pair of characters equals a single byte. This method is little-endian.
+   * single hex value. Therefore, the pair of characters equals a single byte. This method is little-endian.
    *
    * @param hexString The hex String to convert
    * @return An array of bytes

@@ -54,7 +54,7 @@ public class NetToolsTest extends BaseUnitTest {
     HttpServer server = makeFileServer(null, null);
 
     try {
-      Path path = NetTools.downloadToPath(new URI("http://localhost:7000/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, null);
+      Path path = NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, null);
       String result = new String(Files.readAllBytes(path), "UTF-8");
       assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
     } finally {
@@ -67,7 +67,7 @@ public class NetToolsTest extends BaseUnitTest {
     HttpServer server = makeFileServer("User", "Pass");
 
     try {
-      Path path = NetTools.downloadToPath(new URI("http://localhost:7000/src/test/java/org/savantbuild/net/TestFile.txt"), "User", "Pass", null);
+      Path path = NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), "User", "Pass", null);
       String result = new String(Files.readAllBytes(path), "UTF-8");
       assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
     } finally {
@@ -81,7 +81,7 @@ public class NetToolsTest extends BaseUnitTest {
 
     try {
       MD5 md5 = MD5.forBytes(Files.readAllBytes(projectDir.resolve("src/test/java/org/savantbuild/net/TestFile.txt")), "TestFile.txt");
-      Path path = NetTools.downloadToPath(new URI("http://localhost:7000/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, md5);
+      Path path = NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, md5);
       String result = new String(Files.readAllBytes(path), "UTF-8");
       assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
     } finally {
@@ -94,7 +94,7 @@ public class NetToolsTest extends BaseUnitTest {
     HttpServer server = makeFileServer(null, null);
     MD5 md5 = new MD5("0000000000000000000000000000000", new byte[] {0,0,0,0,0}, null);
     try {
-      NetTools.downloadToPath(new URI("http://localhost:7000/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, md5);
+      NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, md5);
       fail("Should have failed");
     } catch (MD5Exception e) {
       // Expected
@@ -104,7 +104,7 @@ public class NetToolsTest extends BaseUnitTest {
   }
 
   /**
-   * Creates a file server that will accept HTTP connections on localhost:7000 and return the bytes of the file in the
+   * Creates a file server that will accept HTTP connections on localhost:7042 and return the bytes of the file in the
    * request starting from the project directory.
    *
    * @param username (Optional) The username to verify was sent to the server in the Authentication header. Leave blank
@@ -115,7 +115,7 @@ public class NetToolsTest extends BaseUnitTest {
    * @throws IOException If the server could not be created.
    */
   protected HttpServer makeFileServer(String username, String password) throws IOException {
-    InetSocketAddress localhost = new InetSocketAddress(7000);
+    InetSocketAddress localhost = new InetSocketAddress(7042);
     HttpServer server = HttpServer.create(localhost, 0);
     server.createContext("/", (httpExchange) -> {
       if (username != null) {
