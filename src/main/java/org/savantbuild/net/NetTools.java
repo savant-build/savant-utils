@@ -23,15 +23,14 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Base64;
 
-import org.savantbuild.security.MD5Tools;
 import org.savantbuild.security.MD5;
 import org.savantbuild.security.MD5Exception;
+import org.savantbuild.security.MD5Tools;
 
 /**
  * This class provides toolkit methods for helping work with URLs and URIs and other network classes.
@@ -44,9 +43,8 @@ public class NetTools {
    *
    * @param parts The parts
    * @return The URI.
-   * @throws URISyntaxException If the parts passed in are not valid URI components.
    */
-  public static URI build(String... parts) throws URISyntaxException {
+  public static URI build(String... parts) {
     StringBuilder build = new StringBuilder(parts[0]);
     for (int i = 1; i < parts.length; i++) {
       boolean endSlash = build.charAt(build.length() - 1) == '/';
@@ -78,7 +76,7 @@ public class NetTools {
       }
     }
 
-    return new URI(build.toString());
+    return URI.create(build.toString());
   }
 
   /**
