@@ -25,21 +25,21 @@ import java.io.PrintStream;
 public final class Ansi256Colors {
   public static final char ESCAPE = 0x1b;
 
-  public static final short ERROR = 124;
+  public static final int ERROR = 124;
 
-  public static final short WARNING = 214;
+  public static final int WARNING = 214;
 
-  public static void setColor(PrintStream stream, short foreground) {
+  public static void setColor(PrintStream stream, int foreground) {
     stream.print(ESCAPE);
     stream.print("[38;5;");
-    stream.print(Short.toString(foreground));
+    stream.print(foreground);
     stream.print("m");
   }
 
-  public static void setColor(StringBuilder build, short foreground) {
+  public static void setColor(StringBuilder build, int foreground) {
     build.append(ESCAPE);
     build.append("[38;5;");
-    build.append(Short.toString(foreground));
+    build.append(foreground);
     build.append("m");
   }
 

@@ -17,6 +17,7 @@ package org.savantbuild.security;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.DigestInputStream;
@@ -156,7 +157,7 @@ public final class MD5 {
       sum += "\n";
     }
 
-    Files.write(path, sum.getBytes("UTF-8"));
+    Files.write(path, sum.getBytes(StandardCharsets.UTF_8));
   }
 
   @Override
