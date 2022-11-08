@@ -39,6 +39,7 @@ public class SystemOutOutput implements Output {
     this.colorize = colorize;
   }
 
+  @Override
   public Output debug(String message, Object... values) {
     if (debugEnabled) {
       print(message, values);
@@ -46,6 +47,7 @@ public class SystemOutOutput implements Output {
     return this;
   }
 
+  @Override
   public Output debugln(String message, Object... values) {
     if (debugEnabled) {
       println(message, values);
@@ -73,6 +75,7 @@ public class SystemOutOutput implements Output {
     return this;
   }
 
+  @Override
   public Output error(String message, Object... values) {
     if (colorize) {
       Ansi256Colors.setColor(out, Ansi256Colors.ERROR);
@@ -87,6 +90,7 @@ public class SystemOutOutput implements Output {
     return this;
   }
 
+  @Override
   public Output errorln(String message, Object... values) {
     if (colorize) {
       Ansi256Colors.setColor(out, Ansi256Colors.ERROR);
@@ -101,16 +105,34 @@ public class SystemOutOutput implements Output {
     return this;
   }
 
+  @Override
   public Output info(String message, Object... values) {
     print(message, values);
     return this;
   }
 
+  @Override
   public Output infoln(String message, Object... values) {
     println(message, values);
     return this;
   }
 
+  @Override
+  public Output infoln(int color, String message, Object... values) {
+    if (colorize) {
+      Ansi256Colors.setColor(out, color);
+    }
+
+    println(message, values);
+
+    if (colorize) {
+      Ansi256Colors.clear(out);
+    }
+
+    return this;
+  }
+
+  @Override
   public Output warning(String message, Object... values) {
     if (colorize) {
       Ansi256Colors.setColor(out, Ansi256Colors.WARNING);
@@ -125,6 +147,7 @@ public class SystemOutOutput implements Output {
     return this;
   }
 
+  @Override
   public Output warningln(String message, Object... values) {
     if (colorize) {
       Ansi256Colors.setColor(out, Ansi256Colors.WARNING);

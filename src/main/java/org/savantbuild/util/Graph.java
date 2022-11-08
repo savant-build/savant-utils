@@ -16,6 +16,7 @@
 package org.savantbuild.util;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -294,6 +295,23 @@ public interface Graph<T, U> {
     class IdentityEdgeFilter<T, U> implements EdgeFilter<T, U> {
       @Override
       public boolean filter(Edge<T, U> edge, Edge<T, U> entryPoint) {
+        return true;
+      }
+    }
+
+    /**
+     * An edge filter that only returns true if an edge has not been traversed yet.
+     */
+    class SingleTraversalEdgeFilter<T, U> implements EdgeFilter<T, U> {
+      private final Set<Edge<T,U>> visited = new HashSet<>();
+
+      @Override
+      public boolean filter(Edge<T, U> edge, Edge<T, U> entryPoint) {
+        if (visited.contains(edge)) {
+          return false;
+        }
+
+        visited.add(edge);
         return true;
       }
     }

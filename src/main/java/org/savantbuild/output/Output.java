@@ -104,6 +104,17 @@ public interface Output {
   Output infoln(String message, Object... values);
 
   /**
+   * Outputs an info message along with the given values. This uses printf if there are values and appends a newline
+   * character to the end of message. If there are no values, this outputs the message via println.
+   *
+   * @param color The ANSI 256 color for the entire message.
+   * @param message The message.
+   * @param values  Values for the message.
+   * @return This.
+   */
+  Output infoln(int color, String message, Object... values);
+
+  /**
    * Outputs a warning message along with the given values. This uses printf if there are values and DOES NOT append a
    * newline character to the end of message. If there are no values, this outputs the message via println.
    *
