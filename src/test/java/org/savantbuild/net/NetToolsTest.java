@@ -63,6 +63,15 @@ public class NetToolsTest extends BaseUnitTest {
   }
 
   @Test
+  public void downloadToFileFromFile() throws Exception {
+    var fileURI = projectDir.resolve("src/test/java/org/savantbuild/net/TestFile.txt")
+                            .toUri();
+    Path path = NetTools.downloadToPath(fileURI, null, null, null);
+    String result = new String(Files.readAllBytes(path), "UTF-8");
+    assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
+  }
+
+  @Test
   public void downloadToFileWithMD5() throws Exception {
     HttpServer server = makeFileServer(null, null);
 
@@ -101,15 +110,6 @@ public class NetToolsTest extends BaseUnitTest {
     } finally {
       server.stop(0);
     }
-  }
-
-  @Test
-  public void downloadToFile_local() throws Exception {
-    var fileURI = projectDir.resolve("src/test/java/org/savantbuild/net/TestFile.txt")
-                            .toUri();
-    Path path = NetTools.downloadToPath(fileURI, null, null, null);
-    String result = new String(Files.readAllBytes(path), "UTF-8");
-    assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
   }
 
   /**
