@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2001-2010, Inversoft, All Rights Reserved
+ * Copyright (c) 2001-2024, Inversoft Inc., All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -63,19 +63,6 @@ public class NetToolsTest extends BaseUnitTest {
   }
 
   @Test
-  public void downloadToFileWithUsernameAndPassword() throws Exception {
-    HttpServer server = makeFileServer("User", "Pass");
-
-    try {
-      Path path = NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), "User", "Pass", null);
-      String result = new String(Files.readAllBytes(path), "UTF-8");
-      assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
-    } finally {
-      server.stop(0);
-    }
-  }
-
-  @Test
   public void downloadToFileWithMD5() throws Exception {
     HttpServer server = makeFileServer(null, null);
 
@@ -92,7 +79,7 @@ public class NetToolsTest extends BaseUnitTest {
   @Test
   public void downloadToFileWithMD5Failure() throws Exception {
     HttpServer server = makeFileServer(null, null);
-    MD5 md5 = new MD5("0000000000000000000000000000000", new byte[] {0,0,0,0,0}, null);
+    MD5 md5 = new MD5("0000000000000000000000000000000", new byte[]{0, 0, 0, 0, 0}, null);
     try {
       NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), null, null, md5);
       fail("Should have failed");
@@ -101,6 +88,28 @@ public class NetToolsTest extends BaseUnitTest {
     } finally {
       server.stop(0);
     }
+  }
+
+  @Test
+  public void downloadToFileWithUsernameAndPassword() throws Exception {
+    HttpServer server = makeFileServer("User", "Pass");
+
+    try {
+      Path path = NetTools.downloadToPath(new URI("http://localhost:7042/src/test/java/org/savantbuild/net/TestFile.txt"), "User", "Pass", null);
+      String result = new String(Files.readAllBytes(path), "UTF-8");
+      assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  public void downloadToFile_local() throws Exception {
+    var fileURI = projectDir.resolve("src/test/java/org/savantbuild/net/TestFile.txt")
+                            .toUri();
+    Path path = NetTools.downloadToPath(fileURI, null, null, null);
+    String result = new String(Files.readAllBytes(path), "UTF-8");
+    assertEquals(result.trim(), "This file is a test file for copying and writing and such.");
   }
 
   /**
