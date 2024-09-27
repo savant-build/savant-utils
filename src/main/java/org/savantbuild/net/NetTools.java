@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2001-2010, Inversoft, All Rights Reserved
+ * Copyright (c) 2001-2024, Inversoft Inc., All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -15,17 +15,21 @@
  */
 package org.savantbuild.net;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Base64;
 
 import org.savantbuild.security.MD5;
@@ -38,6 +42,12 @@ import org.savantbuild.security.MD5Tools;
  * @author Brian Pontarelli
  */
 public class NetTools {
+  // better to not constantly instantiate new clients
+  private static final HttpClient httpClient = HttpClient.newBuilder()
+                                                         .connectTimeout(Duration.ofMillis(4000))
+                                                         .followRedirects(Redirect.NORMAL)
+                                                         .build();
+
   /**
    * Builds a URI from the given parts. These are concatenated together with slashes, depending on the endings of each.
    *
@@ -91,42 +101,54 @@ public class NetTools {
    * @throws MD5Exception If the file was downloaded but doesn't match the MD5 sum.
    */
   public static Path downloadToPath(URI uri, String username, String password, MD5 md5) throws IOException, MD5Exception {
+    return uri.getScheme().startsWith("http") ? fetchViaHttp(uri, username, password, md5) :
+        fetchFile(uri, md5);
+  }
+
+  private static Path fetchFile(URI uri, MD5 md5) throws IOException {
     URLConnection uc = uri.toURL().openConnection();
-    if (uc instanceof HttpURLConnection) {
-      HttpURLConnection huc = (HttpURLConnection) uc;
-      if (username != null) {
-        String credentials = username + ":" + password;
-        huc.setRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
-      }
-
-      huc.setInstanceFollowRedirects(true);
-    }
-
-    if (uc instanceof HttpsURLConnection) {
-      HttpsURLConnection huc = (HttpsURLConnection) uc;
-      huc.setHostnameVerifier((s, sslSession) -> true);
-    }
-
     uc.setConnectTimeout(4000);
     uc.setReadTimeout(10000);
     uc.setDoInput(true);
     uc.setDoOutput(false);
     uc.connect();
+    return writeToTempFile(uc.getInputStream(), md5);
+  }
 
-    if (uc instanceof HttpURLConnection) {
-      HttpURLConnection huc = (HttpURLConnection) uc;
-      int result = huc.getResponseCode();
-      if (result != 200 && result != 404 && result != 410) {
-        throw new IOException("HTTP sent an unexpected response code [" + result + "]");
-      } else if (result == 404 || result == 410) {
-        return null;
-      }
+  private static Path fetchViaHttp(URI uri,
+                                   String username,
+                                   String password,
+                                   MD5 md5) throws IOException {
+    var requestBuilder = HttpRequest.newBuilder()
+                                    .uri(uri)
+                                    .GET()
+                                    .timeout(Duration.ofMillis(10000));
+    if (username != null) {
+      String credentials = username + ":" + password;
+      requestBuilder.header("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
     }
 
+    HttpResponse<InputStream> response;
+    try {
+      response = httpClient.send(requestBuilder.build(), BodyHandlers.ofInputStream());
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+
+    int result = response.statusCode();
+    if (result != 200 && result != 404 && result != 410) {
+      throw new IOException("HTTP sent an unexpected response code [" + result + "]");
+    } else if (result == 404 || result == 410) {
+      return null;
+    }
+    return writeToTempFile(response.body(), md5);
+  }
+
+  private static Path writeToTempFile(InputStream response, MD5 md5) throws IOException {
     File file = File.createTempFile("savant-net-tools", "download");
     file.deleteOnExit();
 
-    try (InputStream is = uc.getInputStream(); FileOutputStream os = new FileOutputStream(file)) {
+    try (InputStream is = response; FileOutputStream os = new FileOutputStream(file)) {
       MD5Tools.write(is, os, md5);
       os.flush();
     }
