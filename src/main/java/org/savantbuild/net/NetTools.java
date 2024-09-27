@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -99,31 +100,25 @@ public class NetTools {
    * @throws IOException If the resource could not be downloaded.
    * @throws MD5Exception If the file was downloaded but doesn't match the MD5 sum.
    */
-  public static Path downloadToPath(URI uri, String username, String password, MD5 md5) throws IOException, MD5Exception, InterruptedException {
-    InputStream inputStream = uri.getScheme().startsWith("http") ? fetchViaHttp(uri, username, password) :
-        fetchFile(uri);
-    File file = File.createTempFile("savant-net-tools", "download");
-    file.deleteOnExit();
-
-    try (InputStream is = inputStream; FileOutputStream os = new FileOutputStream(file)) {
-      MD5Tools.write(is, os, md5);
-      os.flush();
-    }
-
-    return file.toPath();
+  public static Path downloadToPath(URI uri, String username, String password, MD5 md5) throws IOException, MD5Exception {
+    return uri.getScheme().startsWith("http") ? fetchViaHttp(uri, username, password, md5) :
+        fetchFile(uri, md5);
   }
 
-  private static InputStream fetchFile(URI uri) throws IOException {
+  private static Path fetchFile(URI uri, MD5 md5) throws IOException {
     URLConnection uc = uri.toURL().openConnection();
     uc.setConnectTimeout(4000);
     uc.setReadTimeout(10000);
     uc.setDoInput(true);
     uc.setDoOutput(false);
     uc.connect();
-    return uc.getInputStream();
+    return writeToTempFile(uc.getInputStream(), md5);
   }
 
-  private static InputStream fetchViaHttp(URI uri, String username, String password) throws IOException, InterruptedException {
+  private static Path fetchViaHttp(URI uri,
+                                   String username,
+                                   String password,
+                                   MD5 md5) throws IOException {
     var requestBuilder = HttpRequest.newBuilder()
                                     .uri(uri)
                                     .GET()
@@ -133,7 +128,12 @@ public class NetTools {
       requestBuilder.header("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
     }
 
-    var response = httpClient.send(requestBuilder.build(), BodyHandlers.ofInputStream());
+    HttpResponse<InputStream> response;
+    try {
+      response = httpClient.send(requestBuilder.build(), BodyHandlers.ofInputStream());
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
 
     int result = response.statusCode();
     if (result != 200 && result != 404 && result != 410) {
@@ -141,6 +141,18 @@ public class NetTools {
     } else if (result == 404 || result == 410) {
       return null;
     }
-    return response.body();
+    return writeToTempFile(response.body(), md5);
+  }
+
+  private static Path writeToTempFile(InputStream response, MD5 md5) throws IOException {
+    File file = File.createTempFile("savant-net-tools", "download");
+    file.deleteOnExit();
+
+    try (InputStream is = response; FileOutputStream os = new FileOutputStream(file)) {
+      MD5Tools.write(is, os, md5);
+      os.flush();
+    }
+
+    return file.toPath();
   }
 }
