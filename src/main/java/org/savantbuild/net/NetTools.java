@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -28,6 +27,7 @@ import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Base64;
@@ -44,7 +44,7 @@ import org.savantbuild.security.MD5Tools;
 public class NetTools {
   // better to not constantly instantiate new clients
   private static final HttpClient httpClient = HttpClient.newBuilder()
-                                                         .connectTimeout(Duration.ofMillis(4000))
+                                                         .connectTimeout(Duration.ofMillis(10_000))
                                                          .followRedirects(Redirect.NORMAL)
                                                          .build();
 
@@ -77,12 +77,7 @@ public class NetTools {
           first = false;
         }
 
-        try {
-          build.append(URLEncoder.encode(split, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-          // Not really possible
-          throw new IllegalStateException("The JVM doesn't have UTF-8", e);
-        }
+        build.append(URLEncoder.encode(split, StandardCharsets.UTF_8));
       }
     }
 
@@ -101,14 +96,15 @@ public class NetTools {
    * @throws MD5Exception If the file was downloaded but doesn't match the MD5 sum.
    */
   public static Path downloadToPath(URI uri, String username, String password, MD5 md5) throws IOException, MD5Exception {
-    return uri.getScheme().startsWith("http") ? fetchViaHttp(uri, username, password, md5) :
-        fetchFile(uri, md5);
+    return uri.getScheme().startsWith("http")
+        ? fetchViaHttp(uri, username, password, md5)
+        : fetchFile(uri, md5);
   }
 
   private static Path fetchFile(URI uri, MD5 md5) throws IOException {
     URLConnection uc = uri.toURL().openConnection();
-    uc.setConnectTimeout(4000);
-    uc.setReadTimeout(10000);
+    uc.setConnectTimeout(4_000);
+    uc.setReadTimeout(10_000);
     uc.setDoInput(true);
     uc.setDoOutput(false);
     uc.connect();
@@ -122,7 +118,7 @@ public class NetTools {
     var requestBuilder = HttpRequest.newBuilder()
                                     .uri(uri)
                                     .GET()
-                                    .timeout(Duration.ofMillis(10000));
+                                    .timeout(Duration.ofMillis(10_000));
     if (username != null) {
       String credentials = username + ":" + password;
       requestBuilder.header("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
@@ -131,8 +127,8 @@ public class NetTools {
     HttpResponse<InputStream> response;
     try {
       response = httpClient.send(requestBuilder.build(), BodyHandlers.ofInputStream());
-    } catch (InterruptedException e) {
-      throw new IOException(e);
+    } catch (InterruptedException | IOException e) {
+      throw new IOException("Failed to download [" + uri + "] Reason [" + e.getMessage() + "]", e);
     }
 
     int result = response.statusCode();
@@ -141,6 +137,7 @@ public class NetTools {
     } else if (result == 404 || result == 410) {
       return null;
     }
+
     return writeToTempFile(response.body(), md5);
   }
 
