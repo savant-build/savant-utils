@@ -111,10 +111,7 @@ public class NetTools {
     return writeToTempFile(uc.getInputStream(), md5);
   }
 
-  private static Path fetchViaHttp(URI uri,
-                                   String username,
-                                   String password,
-                                   MD5 md5) throws IOException {
+  private static Path fetchViaHttp(URI uri, String username, String password, MD5 md5) throws IOException {
     var requestBuilder = HttpRequest.newBuilder()
                                     .uri(uri)
                                     .GET()
