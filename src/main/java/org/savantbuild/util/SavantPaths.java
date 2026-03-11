@@ -46,7 +46,7 @@ public class SavantPaths {
 
   private final Function<String, String> envLookup;
 
-  private boolean migrated;
+  private volatile boolean migrated;
 
   /**
    * Creates a SavantPaths using the real home directory and environment.
