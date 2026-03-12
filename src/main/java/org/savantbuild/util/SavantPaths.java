@@ -24,8 +24,8 @@ import java.util.function.Function;
 import org.savantbuild.output.Output;
 
 /**
- * Resolves Savant directory paths using XDG Base Directory conventions and handles
- * migration from the legacy ~/.savant/ directory layout.
+ * Resolves Savant directory paths using XDG Base Directory conventions and handles migration from the legacy ~/.savant/
+ * directory layout.
  *
  * <p>XDG mapping:</p>
  * <ul>
@@ -36,23 +36,19 @@ import org.savantbuild.output.Output;
  * @author Brian Pontarelli
  */
 public class SavantPaths {
-  private static final SavantPaths defaultInstance = new SavantPaths(
+  private static final SavantPaths INSTANCE = new SavantPaths(
       Path.of(System.getProperty("user.home")),
       System::getenv
   );
 
-  private final Path homeDir;
-
   private final Function<String, String> envLookup;
 
-  private volatile boolean migrated;
+  private final Path homeDir;
 
-  /**
-   * Creates a SavantPaths using the real home directory and environment.
-   */
-  public SavantPaths() {
-    this(Path.of(System.getProperty("user.home")), System::getenv);
-  }
+  // This cannot be static because we need the ability to reset it in tests. However, it is effectively static outside
+  // of tests because all the constructors are private, which means that only the static get() method is usable, which
+  // returns a static instance.
+  private volatile boolean migrated;
 
   /**
    * Creates a SavantPaths with an overridable home directory and environment map. Used for testing.
@@ -75,7 +71,7 @@ public class SavantPaths {
    * @return The default SavantPaths instance.
    */
   public static SavantPaths get() {
-    return defaultInstance;
+    return INSTANCE;
   }
 
   /**
@@ -93,8 +89,8 @@ public class SavantPaths {
   }
 
   /**
-   * Migrates from the legacy ~/.savant/ directory to XDG locations. This method is idempotent —
-   * it only runs once per instance.
+   * Migrates from the legacy ~/.savant/ directory to XDG locations. This method is idempotent — it only runs once per
+   * instance.
    *
    * <p>Migration rules:</p>
    * <ul>
