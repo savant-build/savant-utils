@@ -31,7 +31,6 @@ import org.savantbuild.output.Output;
  * <ul>
  *   <li>Cache → $XDG_CACHE_HOME/savant (default ~/.cache/savant)</li>
  *   <li>Config → $XDG_CONFIG_HOME/savant (default ~/.config/savant)</li>
- *   <li>Data → $XDG_DATA_HOME/savant (default ~/.local/share/savant)</li>
  * </ul>
  *
  * @author Brian Pontarelli
@@ -91,13 +90,6 @@ public class SavantPaths {
    */
   public Path configDir() {
     return resolveXDG("XDG_CONFIG_HOME", ".config").resolve("savant");
-  }
-
-  /**
-   * @return The Savant data directory: $XDG_DATA_HOME/savant or ~/.local/share/savant
-   */
-  public Path dataDir() {
-    return resolveXDG("XDG_DATA_HOME", ".local/share").resolve("savant");
   }
 
   /**

@@ -39,7 +39,6 @@ public class SavantPathsTest extends BaseUnitTest {
     SavantPaths paths = new SavantPaths(home, Map.of());
     assertEquals(paths.cacheDir(), home.resolve(".cache/savant"));
     assertEquals(paths.configDir(), home.resolve(".config/savant"));
-    assertEquals(paths.dataDir(), home.resolve(".local/share/savant"));
   }
 
   @Test
@@ -47,13 +46,11 @@ public class SavantPathsTest extends BaseUnitTest {
     Path home = Path.of("/fakehome");
     Map<String, String> env = Map.of(
         "XDG_CACHE_HOME", "/custom/cache",
-        "XDG_CONFIG_HOME", "/custom/config",
-        "XDG_DATA_HOME", "/custom/data"
+        "XDG_CONFIG_HOME", "/custom/config"
     );
     SavantPaths paths = new SavantPaths(home, env);
     assertEquals(paths.cacheDir(), Path.of("/custom/cache/savant"));
     assertEquals(paths.configDir(), Path.of("/custom/config/savant"));
-    assertEquals(paths.dataDir(), Path.of("/custom/data/savant"));
   }
 
   @Test
@@ -63,7 +60,6 @@ public class SavantPathsTest extends BaseUnitTest {
     SavantPaths paths = new SavantPaths(home, env);
     assertEquals(paths.cacheDir(), Path.of("/custom/cache/savant"));
     assertEquals(paths.configDir(), home.resolve(".config/savant"));
-    assertEquals(paths.dataDir(), home.resolve(".local/share/savant"));
   }
 
   @Test
