@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.savantbuild.util.Graph.Edge.BaseEdge;
 import org.savantbuild.util.Graph.EdgeFilter.IdentityEdgeFilter;
@@ -132,10 +131,12 @@ public class HashGraph<T, U> implements Graph<T, U> {
       return null;
     }
 
-    return node.inbound
-        .stream()
-        .map(HashEdge::toEdge)
-        .collect(Collectors.toList());
+    // Optimize: Replace stream with simple loop to avoid stream overhead
+    List<Edge<T, U>> edges = new ArrayList<>(node.inbound.size());
+    for (HashEdge<T, U> edge : node.inbound) {
+      edges.add(edge.toEdge());
+    }
+    return edges;
   }
 
   @Override
@@ -145,10 +146,12 @@ public class HashGraph<T, U> implements Graph<T, U> {
       return null;
     }
 
-    return node.outbound
-        .stream()
-        .map(HashEdge::toEdge)
-        .collect(Collectors.toList());
+    // Optimize: Replace stream with simple loop to avoid stream overhead
+    List<Edge<T, U>> edges = new ArrayList<>(node.outbound.size());
+    for (HashEdge<T, U> edge : node.outbound) {
+      edges.add(edge.toEdge());
+    }
+    return edges;
   }
 
   @Override
@@ -211,9 +214,12 @@ public class HashGraph<T, U> implements Graph<T, U> {
     List<HashEdge<T, U>> outboundEdges = new ArrayList<>(node.outbound);
     clearEdges(node);
 
-    outboundEdges.stream()
-                 .filter((edge) -> edge.destination.inbound.isEmpty())
-                 .forEach((edge) -> removeNode(edge.destination.value));
+    // Optimize: Replace stream with loop
+    for (HashEdge<T, U> edge : outboundEdges) {
+      if (edge.destination.inbound.isEmpty()) {
+        removeNode(edge.destination.value);
+      }
+    }
 
     nodes.remove(value);
   }
@@ -292,10 +298,12 @@ public class HashGraph<T, U> implements Graph<T, U> {
     // Prevent concurrent modification exceptions by using a new ArrayList
     new ArrayList<>(node.outbound).forEach((edge) -> removeEdge(edge.origin.value, edge.destination.value, edge.value));
     node.outbound.clear();
+    node.outboundSet.clear();
 
     // Prevent concurrent modification exceptions by using a new ArrayList
     new ArrayList<>(node.inbound).forEach((edge) -> removeEdge(edge.origin.value, edge.destination.value, edge.value));
     node.inbound.clear();
+    node.inboundSet.clear();
   }
 
   protected T find(HashNode<T, U> root, Set<T> visited, Predicate<T> predicate) {
@@ -327,10 +335,15 @@ public class HashGraph<T, U> implements Graph<T, U> {
                           Set<T> visited, EdgeFilter<T, U> edgeFilter, GraphConsumer<T, U> consumer, int depth) {
     List<HashEdge<T, U>> edges = root.outbound;
     if (traversedEdge != null) {
-      edges = root.outbound
-          .stream()
-          .filter((edge) -> edgeFilter.filter(edge.toEdge(), traversedEdge.toEdge()))
-          .collect(Collectors.toList());
+      // Optimize: Replace stream with loop to avoid stream overhead
+      Edge<T, U> traversedEdgeConverted = traversedEdge.toEdge();
+      List<HashEdge<T, U>> filteredEdges = new ArrayList<>();
+      for (HashEdge<T, U> edge : root.outbound) {
+        if (edgeFilter.filter(edge.toEdge(), traversedEdgeConverted)) {
+          filteredEdges.add(edge);
+        }
+      }
+      edges = filteredEdges;
     }
 
     for (int i = 0; i < edges.size(); i++) {
@@ -381,6 +394,12 @@ public class HashGraph<T, U> implements Graph<T, U> {
 
     public final U value;
 
+    // Cache the BaseEdge to avoid repeated object creation during traversal
+    private volatile Edge<T, U> cachedEdge;
+
+    // Cache the hash code since this object is immutable
+    private int cachedHashCode = 0;
+
     public HashEdge(HashNode<T, U> origin, HashNode<T, U> destination, U value) {
       this.origin = origin;
       this.destination = destination;
@@ -402,14 +421,28 @@ public class HashGraph<T, U> implements Graph<T, U> {
 
     @Override
     public int hashCode() {
-      int result = destination.value.hashCode();
-      result = 31 * result + origin.value.hashCode();
-      result = 31 * result + value.hashCode();
-      return result;
+      // Cache hash code since this object is immutable
+      if (cachedHashCode == 0) {
+        int result = destination.value.hashCode();
+        result = 31 * result + origin.value.hashCode();
+        result = 31 * result + value.hashCode();
+        cachedHashCode = result;
+      }
+      return cachedHashCode;
     }
 
     public Edge<T, U> toEdge() {
-      return new BaseEdge<>(origin.value, destination.value, value);
+      // Use double-checked locking to lazily initialize and cache the edge
+      Edge<T, U> result = cachedEdge;
+      if (result == null) {
+        synchronized (this) {
+          result = cachedEdge;
+          if (result == null) {
+            cachedEdge = result = new BaseEdge<>(origin.value, destination.value, value);
+          }
+        }
+      }
+      return result;
     }
   }
 
@@ -422,6 +455,10 @@ public class HashGraph<T, U> implements Graph<T, U> {
     public final List<HashEdge<T, U>> inbound = new ArrayList<>();
 
     public final List<HashEdge<T, U>> outbound = new ArrayList<>();
+
+    // Use HashSets for O(1) duplicate checking instead of ArrayList.contains()
+    private final Set<HashEdge<T, U>> inboundSet = new HashSet<>();
+    private final Set<HashEdge<T, U>> outboundSet = new HashSet<>();
 
     public T value;
 
@@ -474,6 +511,8 @@ public class HashGraph<T, U> implements Graph<T, U> {
     public void removeEdge(HashEdge<T, U> edge) {
       outbound.remove(edge);
       inbound.remove(edge);
+      outboundSet.remove(edge);
+      inboundSet.remove(edge);
     }
 
     /**
@@ -485,14 +524,16 @@ public class HashGraph<T, U> implements Graph<T, U> {
 
     void addInboundEdge(HashNode<T, U> origin, U edgeValue) {
       HashEdge<T, U> edge = new HashEdge<>(origin, this, edgeValue);
-      if (!inbound.contains(edge)) {
+      // Use HashSet for O(1) duplicate checking instead of ArrayList.contains()
+      if (inboundSet.add(edge)) {
         inbound.add(edge);
       }
     }
 
     void addOutboundEdge(HashNode<T, U> destination, U edgeValue) {
       HashEdge<T, U> edge = new HashEdge<>(this, destination, edgeValue);
-      if (!outbound.contains(edge)) {
+      // Use HashSet for O(1) duplicate checking instead of ArrayList.contains()
+      if (outboundSet.add(edge)) {
         outbound.add(edge);
       }
     }
